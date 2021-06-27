@@ -1,0 +1,7 @@
+{
+    "watch": ["src"],
+    "ext": "ts",
+    "ignore": [],
+    "exec": "npm run build && node ./dist/test.js"
+  }
+  
