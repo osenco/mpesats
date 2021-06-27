@@ -1,6 +1,6 @@
-# mpesats
+# M-Pesa TypeScript SDK
 
-Wrapper for Mpesa Daraja Api using typescript
+This is a simple wrapper for Mpesa Daraja Api using typescript
 
 ``` javascript
 npm intall --save @osenco/mpesa
@@ -23,11 +23,11 @@ const mpesa = new Mpesa(
         username //"apitest",
         password //"",
         passkey //"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
-        validation_url //"/lipwa/validate",
-        confirmation_url //"/lipwa/confirm",
-        callback_url //"/lipwa/reconcile",
-        timeout_url //"/lipwa/timeout",
-        results_url //"/lipwa/results",
+        validationUrl //"/lipwa/validate",
+        confirmationUrl //"/lipwa/confirm",
+        callbackUrl //"/lipwa/reconcile",
+        timeoutUrl //"/lipwa/timeout",
+        resultsUrl //"/lipwa/results",
     }
 )
 ```

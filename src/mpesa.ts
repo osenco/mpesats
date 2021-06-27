@@ -9,7 +9,7 @@ import * as path from 'path';
 
 dotenv.config()
 
-export class Service {
+export class Mpesa {
     /**
      * @var object config Configuration options
      */
@@ -32,11 +32,11 @@ export class Service {
             username: "apitest",
             password: "",
             passkey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
-            validation_url: "/lipwa/validate",
-            confirmation_url: "/lipwa/confirm",
-            callback_url: "/lipwa/reconcile",
-            timeout_url: "/lipwa/timeout",
-            results_url: "/lipwa/results",
+            validationUrl: "/lipwa/validate",
+            confirmationUrl: "/lipwa/confirm",
+            callbackUrl: "/lipwa/reconcile",
+            timeoutUrl: "/lipwa/timeout",
+            resultsUrl: "/lipwa/results",
         };
 
         if (!configs && !configs.headoffice) {
@@ -76,9 +76,7 @@ export class Service {
         return data?.access_token;
     }
 
-    private async generateSecurityCredential(
-        password: string
-    ) {
+    private async generateSecurityCredential() {
         return crypto
             .publicEncrypt(
                 {
@@ -94,7 +92,7 @@ export class Service {
                     padding: constants.RSA_PKCS1_PADDING
                 },
 
-                Buffer.from(password)
+                Buffer.from(this.config.password)
             )
             .toString('base64');
 
@@ -108,7 +106,7 @@ export class Service {
      * @return string/bool
      */
     public async get(endpoint: string, credentials = null) {
-        return axios.post(
+        return await axios.post(
             endpoint,
             {
                 headers: {
@@ -116,8 +114,6 @@ export class Service {
                 }
             },
         )
-            .then(res => res.data)
-            .catch(err => err.response.data)
     }
 
     /**
@@ -178,7 +174,7 @@ export class Service {
             PartyA: phone,
             PartyB: this.config.shortcode,
             PhoneNumber: phone,
-            CallBackURL: this.config.callback_url,
+            CallBackURL: this.config.callbackUrl,
             AccountReference: reference,
             TransactionDesc: description,
             Remark: remark,
@@ -199,22 +195,21 @@ export class Service {
         phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
         phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
         phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
-        const plaintext = this.config.password;
 
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.ke/mpesa/b2c/v1/paymentrequest"
             : "https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest";
-            
+
         const body = {
             InitiatorName: this.config.username,
-            SecurityCredential: await this.generateSecurityCredential(plaintext),
+            SecurityCredential: await this.generateSecurityCredential(),
             CommandID: command,
             Amount: Number(amount),
             PartyA: this.config.shortcode,
             PartyB: phone,
             Remarks: remarks,
-            QueueTimeOutURL: this.config.timeout_url,
-            ResultURL: this.config.results_url,
+            QueueTimeOutURL: this.config.timeoutUrl,
+            ResultURL: this.config.resultsUrl,
             Occasion: occassion
         }
 
@@ -244,7 +239,6 @@ export class Service {
         occasion = "Transaction Status Query"
     ) {
         const env = this.config.env;
-        const plaintext = this.config.password;
 
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.kelipwa/transactionstatus/v1/query"
@@ -252,13 +246,13 @@ export class Service {
 
         const data = {
             Initiator: this.config.username,
-            SecurityCredential: await this.generateSecurityCredential(plaintext),
+            SecurityCredential: await this.generateSecurityCredential(),
             CommandID: command,
             TransactionID: transaction,
             PartyA: this.config.shortcode,
             IdentifierType: this.config.type,
-            ResultURL: this.config.results_url,
-            QueueTimeOutURL: this.config.timeout_url,
+            ResultURL: this.config.resultsUrl,
+            QueueTimeOutURL: this.config.timeoutUrl,
             Remarks: remarks,
             Occasion: occasion,
         };
@@ -287,7 +281,7 @@ export class Service {
         occasion = "Transaction Reversal"
     ) {
         const env = this.config.env;
-        const plaintext = this.config.password;
+
 
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.kelipwa/reversal/v1/request"
@@ -296,13 +290,13 @@ export class Service {
         const data = {
             CommandID: "TransactionReversal",
             Initiator: this.config.business,
-            SecurityCredential: await this.generateSecurityCredential(plaintext),
+            SecurityCredential: await this.generateSecurityCredential(),
             TransactionID: transaction,
             Amount: amount,
             ReceiverParty: receiver,
             RecieverIdentifierType: receiver_type,
-            ResultURL: this.config.results_url,
-            QueueTimeOutURL: this.config.timeout_url,
+            ResultURL: this.config.resultsUrl,
+            QueueTimeOutURL: this.config.timeoutUrl,
             Remarks: remarks,
             Occasion: occasion
         };
@@ -324,7 +318,7 @@ export class Service {
         remarks = "Balance Query",
     ) {
         const env = this.config.env;
-        const plaintext = this.config.password;
+
 
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.kelipwa/accountbalance/v1/query"
@@ -333,12 +327,12 @@ export class Service {
         const data = {
             CommandID: command,
             Initiator: this.config.username,
-            SecurityCredential: await this.generateSecurityCredential(plaintext),
+            SecurityCredential: await this.generateSecurityCredential(),
             PartyA: this.config.shortcode,
             IdentifierType: this.config.type,
             Remarks: remarks,
-            QueueTimeOutURL: this.config.timeout_url,
-            ResultURL: this.config.results_url,
+            QueueTimeOutURL: this.config.timeoutUrl,
+            ResultURL: this.config.resultsUrl,
         };
 
         return await this.post(endpoint, data)

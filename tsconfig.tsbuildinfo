@@ -377,8 +377,8 @@
         "affectsGlobalScope": false
       },
       "./src/types.ts": {
-        "version": "3398f43ad0f3a3a2128d4de071840cc39eafc01c549b1bc995f9ba38ad2e983d",
-        "signature": "48c3b461925c7ab88fcf57e1e18d0aa679af3b8edb3904e077a25a38f9533a5c",
+        "version": "0dca0da34464b55150df88d586a8be85984281db086ffd0ef2bfbb7a771642bc",
+        "signature": "02d822c0cbd80f8f18769cf0705006f18bf7f74de5b345311a8b04528fda7d49",
         "affectsGlobalScope": false
       },
       "./node_modules/date-fns/typings.d.ts": {
@@ -387,8 +387,8 @@
         "affectsGlobalScope": true
       },
       "./src/mpesa.ts": {
-        "version": "ae7a2e2fe3e83ceeb8934a19a9b0c624f928097274ffd6fac8526f299398bff8",
-        "signature": "f8e7fc9f5743cb224dd41c77744c54f881ad2ecb117453e5ea0b0e5f2e8a2c6a",
+        "version": "055553127645d82f243858eceb85694db201ac4610fc42b1455fb30e50a3a75a",
+        "signature": "7a31501e5628ac7cd3005d77f89a3cffe0355abec2ad6322d78e349771fee6a9",
         "affectsGlobalScope": false
       },
       "./src/index.ts": {
@@ -757,6 +757,10 @@
         "./src/types.ts"
       ],
       "./src/mpesa.ts": [
+        "./node_modules/@types/node/constants.d.ts",
+        "./node_modules/@types/node/crypto.d.ts",
+        "./node_modules/@types/node/fs.d.ts",
+        "./node_modules/@types/node/path.d.ts",
         "./node_modules/axios/index.d.ts",
         "./node_modules/date-fns/typings.d.ts",
         "./node_modules/dotenv/types/index.d.ts",
@@ -1103,7 +1107,7 @@
         "./src/types.ts"
       ],
       "./src/mpesa.ts": [
-        "./src/types.ts"
+        "./node_modules/axios/index.d.ts"
       ]
     },
     "semanticDiagnosticsPerFile": [
