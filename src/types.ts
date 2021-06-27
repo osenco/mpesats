@@ -9,18 +9,18 @@ export type Payload = {
 export type CallBack = {
     Body: {
         stkCallback: {
-        MerchantRequestID: string,
-        CheckoutRequestID: string,
-        ResultCode: 0,
-        ResultDesc: string,
-        CallbackMetadata?: {
-            Item: {Name: string, Value?: string }[]
+            MerchantRequestID: string,
+            CheckoutRequestID: string,
+            ResultCode: 0,
+            ResultDesc: string,
+            CallbackMetadata?: {
+                Item: { Name: string, Value?: string }[]
             },
         },
     },
 }
 
-export type LipaNaMpesaPayload = {
+export type StkPushPayload = {
     BusinessShortCode: string,
     Password: string,
     Timestamp: string,
@@ -40,5 +40,29 @@ export type PaymentResponse = {
     ResponseCode: string,
     ResponseDescription: string,
     CustomerMessage: string
+}
+
+export type C2BPayload = {
+    CommandID: string,
+    Amount: number,
+    Msisdn: number,
+    BillRefNumber: string | number,
+    ShortCode: number
+}
+
+export type C2BIpnPayload = {
+    TransactionType: string,
+    TransID: string,
+    TransTime: number,
+    TransAmount: number,
+    BusinessShortCode: number,
+    BillRefNumber: string | number | null,
+    InvoiceNumber: string | null,
+    OrgAccountBalance: string,
+    ThirdPartyTransID: string,
+    MSISDN: number,
+    FirstName: string,
+    MiddleName: string,
+    LastName: string
 }
 
