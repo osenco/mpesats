@@ -1,3 +1,4 @@
+import { AxiosInstance } from 'axios';
 export declare class Mpesa {
     /**
      * @var object config Configuration options
@@ -18,6 +19,7 @@ export declare class Mpesa {
         timeoutUrl: string;
         resultsUrl: string;
     };
+    http: AxiosInstance;
     /**
      * Setup global configuration for classes
      * @var Array configs Formatted configuration options
@@ -59,18 +61,12 @@ export declare class Mpesa {
      */
     stkPush(phone: string | number, amount: number, reference?: string, description?: string, remark?: string): Promise<{
         data: any;
-        error?: undefined;
+        error: null;
     } | {
+        data: null;
         error: any;
-        data?: undefined;
     } | undefined>;
-    b2cSend(phone: string, amount?: number, command?: string, remarks?: string, occassion?: string): Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: string;
-        data?: undefined;
-    }>;
+    b2cSend(phone: string, amount?: number, command?: string, remarks?: string, occassion?: string): Promise<any>;
     /**
      * Get Status of a Transaction
      *

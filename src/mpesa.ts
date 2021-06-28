@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import * as constants from 'constants';
 import { Payload, PaymentResponse, StkPushPayload } from './types'
 import { format } from 'date-fns'
@@ -26,6 +26,8 @@ export class Mpesa {
         timeoutUrl: "/lipwa/timeout",
         resultsUrl: "/lipwa/results",
     };
+
+    public http: AxiosInstance
 
     /**
      * Setup global configuration for classes
@@ -56,6 +58,16 @@ export class Mpesa {
         }
 
         this.config = { ...defaults, ...configs };
+
+        this.http = axios.create({
+            baseURL: this.config.env == 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke',
+            withCredentials: true,
+        });
+
+        this.http.defaults.headers.common = {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+        };
     }
 
     /**
@@ -69,17 +81,22 @@ export class Mpesa {
             this.config.key + ':' + this.config.secret
         ).toString('base64')
 
-        const { data } = await axios.get(this.config.env == 'live'
-            ? 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-            : 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
-            {
-                headers: {
-                    'Authorization': auth
+        try {
+            const { data } = await this.http.get(this.config.env == 'live'
+                ? 'oauth/v1/generate?grant_type=client_credentials'
+                : 'oauth/v1/generate?grant_type=client_credentials',
+                {
+                    headers: {
+                        'Authorization': auth
+                    }
                 }
-            }
-        )
+            )
 
-        return data?.access_token;
+            return data?.access_token;
+        } catch (error) {
+            return error
+            console.log(error);
+        }
     }
 
     private async generateSecurityCredential() {
@@ -116,7 +133,7 @@ export class Mpesa {
             this.config.key + ':' + this.config.secret
         ).toString('base64')
 
-        return await axios.get(
+        return await this.http.get(
             endpoint,
             {
                 headers: {
@@ -134,7 +151,7 @@ export class Mpesa {
      * @return string/bool
      */
     public async post(endpoint: string, payload: any) {
-        return axios.post(
+        return this.http.post(
             endpoint,
             payload,
             {
@@ -142,8 +159,11 @@ export class Mpesa {
                     'Authorization': 'Bearer ' + await this.authenticate()
                 }
             },
-        ).then((data: any) => data)
-            .catch((e: any) => ({ errorCode: 1, errorMessage: e.message }))
+        )
+            .then(({ data }) => data)
+            .catch((e: any) => {
+                return e.response.data
+            })
     }
 
     /**
@@ -173,8 +193,8 @@ export class Mpesa {
         ).toString('base64')
 
         const endpoint = (this.config.env == "live")
-            ? "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
-            : "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
+            ? "mpesa/stkpush/v1/processrequest"
+            : "mpesa/stkpush/v1/processrequest";
 
         const payload = {
             BusinessShortCode: this.config.headoffice,
@@ -194,11 +214,11 @@ export class Mpesa {
         const response = await this.post(endpoint, payload);
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
     }
 
@@ -216,8 +236,8 @@ export class Mpesa {
         phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
 
         const endpoint = (env == "live")
-            ? "https://api.safaricom.co.ke/mpesa/b2c/v1/paymentrequest"
-            : "https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest";
+            ? "mpesa/b2c/v1/paymentrequest"
+            : "mpesa/b2c/v1/paymentrequest";
 
         const body = {
             InitiatorName: this.config.username,
@@ -232,12 +252,12 @@ export class Mpesa {
             Occasion: occassion
         }
 
-        const { data } = await this.post(endpoint, body)
+        const response = await this.post(endpoint, body)
 
-        if (data) {
-            return { data }
+        if (response.data) {
+            return response
         } else {
-            return { error: "" }
+            return { error: response }
         }
     }
 
@@ -260,8 +280,8 @@ export class Mpesa {
         const env = this.config.env;
 
         const endpoint = (env == "live")
-            ? "https://api.safaricom.co.kelipwa/transactionstatus/v1/query"
-            : "https://sandbox.safaricom.co.kelipwa/transactionstatus/v1/query";
+            ? "mpesa/transactionstatus/v1/query"
+            : "mpesa/transactionstatus/v1/query";
 
         const payload = {
             Initiator: this.config.username,
@@ -310,8 +330,8 @@ export class Mpesa {
         const env = this.config.env;
 
         const endpoint = (env == "live")
-            ? "https://api.safaricom.co.kelipwa/reversal/v1/request"
-            : "https://sandbox.safaricom.co.kelipwa/reversal/v1/request";
+            ? "mpesa/reversal/v1/request"
+            : "mpesa/reversal/v1/request";
 
         const payload = {
             CommandID: "TransactionReversal",
@@ -354,8 +374,8 @@ export class Mpesa {
         const env = this.config.env;
 
         const endpoint = (env == "live")
-            ? "https://api.safaricom.co.kelipwa/accountbalance/v1/query"
-            : "https://sandbox.safaricom.co.kelipwa/accountbalance/v1/query";
+            ? "mpesa/accountbalance/v1/query"
+            : "mpesa/accountbalance/v1/query";
 
         const payload = {
             CommandID: command,
