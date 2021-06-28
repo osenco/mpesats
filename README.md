@@ -18,8 +18,8 @@ const mpesa = new Mpesa(
         type //4,
         shortcode //"174379",
         headoffice //"174379",
-        key //"Your Consumer Key",
-        secret //"Your Consumer Secret",
+        key //"9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
+        secret //"bclwIPkcRqw61yUt",
         username //"apitest",
         password //"",
         passkey //"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
@@ -33,18 +33,30 @@ const mpesa = new Mpesa(
 ```
 
 ``` javascript
-const { error, data: {    
-    MerchantRequestID: string,    
-    CheckoutRequestID: string,    
-    ResponseCode: string,    
-    ResponseDescription: string,    
-    CustomerMessage: string
-    } 
-} = mpesa.stkPush(
-    phone //254705459494,
-    amount //10,
-    reference // "ACCOUNT",
-    description // "Transaction Description",
-    remark // "Remark"
-)
+mpesa.stkPush(
+    254705459494,
+    10,
+    "ACCOUNT",
+    "Transaction Description",
+    "Remark"
+).then(({
+    error,
+    data
+}) => {
+    if (data) {
+        const {
+            MerchantRequestID,
+            CheckoutRequestID,
+            ResponseCode,
+            ResponseDescription,
+            CustomerMessage
+        } = data
+        console.log(MerchantRequestID)
+    }
+
+    if (error) {
+        const { errorCode, errorMessage } = error
+        console.log(errorCode, errorMessage);
+    }
+})
 ```

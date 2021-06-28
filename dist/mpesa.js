@@ -24,28 +24,45 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Mpesa = void 0;
 const axios_1 = __importDefault(require("axios"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const constants = __importStar(require("constants"));
 const date_fns_1 = require("date-fns");
 const crypto = __importStar(require("crypto"));
 const fs = __importStar(require("fs"));
 const path = __importStar(require("path"));
-dotenv_1.default.config();
 class Mpesa {
     /**
      * Setup global configuration for classes
-     * @param Array configs Formatted configuration options
+     * @var Array configs Formatted configuration options
      *
      * @return void
      */
     constructor(configs) {
+        /**
+         * @var object config Configuration options
+         */
+        this.config = {
+            env: "sandbox",
+            type: 4,
+            shortcode: "174379",
+            headoffice: "174379",
+            key: "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
+            secret: "bclwIPkcRqw61yUt",
+            username: "apitest",
+            password: "",
+            passkey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+            validationUrl: "/lipwa/validate",
+            confirmationUrl: "/lipwa/confirm",
+            callbackUrl: "/lipwa/reconcile",
+            timeoutUrl: "/lipwa/timeout",
+            resultsUrl: "/lipwa/results",
+        };
         const defaults = {
             env: "sandbox",
             type: 4,
             shortcode: "174379",
             headoffice: "174379",
-            key: "Your Consumer Key",
-            secret: "Your Consumer Secret",
+            key: "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
+            secret: "bclwIPkcRqw61yUt",
             username: "apitest",
             password: "",
             passkey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
@@ -56,14 +73,9 @@ class Mpesa {
             resultsUrl: "/lipwa/results",
         };
         if (!configs && !configs.headoffice) {
-            defaults.headoffice = configs.shortcode;
+            configs.headoffice = configs.shortcode;
         }
-        Object.keys(defaults).forEach((key) => {
-            if (configs[key]) {
-                defaults[key] = configs[key];
-            }
-        });
-        this.config = defaults;
+        this.config = Object.assign(Object.assign({}, defaults), configs);
     }
     /**
      * Fetch Token To Authenticate Requests
@@ -91,38 +103,40 @@ class Mpesa {
     }
     /**
      * Perform a GET request to the M-PESA Daraja API
-     * @param String endpoint Daraja API URL Endpoint
-     * @param String credentials Formated Auth credentials
+     * @var String endpoint Daraja API URL Endpoint
+     * @var String credentials Formated Auth credentials
      *
      * @return string/bool
      */
     async get(endpoint, credentials = null) {
-        return await axios_1.default.post(endpoint, {
+        const auth = 'Basic ' + Buffer.from(this.config.key + ':' + this.config.secret).toString('base64');
+        return await axios_1.default.get(endpoint, {
             headers: {
-                'Authorization': 'Bearer ' + await this.authenticate()
+                'Authorization': auth
             }
         });
     }
     /**
      * Perform a POST request to the M-PESA Daraja API
-     * @param String endpoint Daraja API URL Endpoint
-     * @param Array data Formated array of data to send
+     * @var String endpoint Daraja API URL Endpoint
+     * @var Array data Formated array of data to send
      *
      * @return string/bool
      */
-    async post(endpoint, data) {
-        return await axios_1.default.post(endpoint, data, {
+    async post(endpoint, payload) {
+        return axios_1.default.post(endpoint, payload, {
             headers: {
                 'Authorization': 'Bearer ' + await this.authenticate()
             }
-        });
+        }).then((data) => data)
+            .catch((e) => ({ errorCode: 1, errorMessage: e.message }));
     }
     /**
-     * @param Integer phone The MSISDN sending the funds.
-     * @param Integer amount The amount to be transacted.
-     * @param String reference Used with M-Pesa PayBills.
-     * @param String description A description of the transaction.
-     * @param String remark Remarks
+     * @var Integer phone The MSISDN sending the funds.
+     * @var Integer amount The amount to be transacted.
+     * @var String reference Used with M-Pesa PayBills.
+     * @var String description A description of the transaction.
+     * @var String remark Remarks
      *
      * @return array Response
      */
@@ -132,11 +146,11 @@ class Mpesa {
         phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
         phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
         const timestamp = date_fns_1.format(new Date(), "yyyyMMddHHmmss");
-        const password = Buffer.from(this.config.shortcode.this.config.passkey.timestamp).toString('base64');
+        const password = Buffer.from(this.config.shortcode + this.config.passkey + timestamp).toString('base64');
         const endpoint = (this.config.env == "live")
             ? "https://api.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
             : "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
-        const data = {
+        const payload = {
             BusinessShortCode: this.config.headoffice,
             Password: password,
             Timestamp: timestamp,
@@ -150,7 +164,13 @@ class Mpesa {
             TransactionDesc: description,
             Remark: remark,
         };
-        return await this.post(endpoint, data);
+        const response = await this.post(endpoint, payload);
+        if (response.MerchantRequestID) {
+            return { data: response };
+        }
+        if (response.errorCode) {
+            return { error: response };
+        }
     }
     async b2cSend(phone, amount = 10, command = "BusinessPayment", remarks = "", occassion = "") {
         const env = this.config.env;
@@ -184,10 +204,10 @@ class Mpesa {
     /**
      * Get Status of a Transaction
      *
-     * @param String transaction
-     * @param String command
-     * @param String remarks
-     * @param String occassion
+     * @var String transaction
+     * @var String command
+     * @var String remarks
+     * @var String occassion
      *
      * @return array Result
      */
@@ -196,7 +216,7 @@ class Mpesa {
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.kelipwa/transactionstatus/v1/query"
             : "https://sandbox.safaricom.co.kelipwa/transactionstatus/v1/query";
-        const data = {
+        const payload = {
             Initiator: this.config.username,
             SecurityCredential: await this.generateSecurityCredential(),
             CommandID: command,
@@ -208,17 +228,23 @@ class Mpesa {
             Remarks: remarks,
             Occasion: occasion,
         };
-        return await this.post(endpoint, data);
+        const response = await this.post(endpoint, payload);
+        if (response.MerchantRequestID) {
+            return { data: response };
+        }
+        if (response.errorCode) {
+            return { error: response };
+        }
     }
     /**
      * Reverse a Transaction
      *
-     * @param String transaction
-     * @param Integer amount
-     * @param Integer receiver
-     * @param String receiver_type
-     * @param String remarks
-     * @param String occassion
+     * @var String transaction
+     * @var Integer amount
+     * @var Integer receiver
+     * @var String receiver_type
+     * @var String remarks
+     * @var String occassion
      *
      * @return array Result
      */
@@ -227,9 +253,9 @@ class Mpesa {
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.kelipwa/reversal/v1/request"
             : "https://sandbox.safaricom.co.kelipwa/reversal/v1/request";
-        const data = {
+        const payload = {
             CommandID: "TransactionReversal",
-            Initiator: this.config.business,
+            Initiator: this.config.username,
             SecurityCredential: await this.generateSecurityCredential(),
             TransactionID: transaction,
             Amount: amount,
@@ -240,14 +266,20 @@ class Mpesa {
             Remarks: remarks,
             Occasion: occasion
         };
-        return await this.post(endpoint, data);
+        const response = await this.post(endpoint, payload);
+        if (response.MerchantRequestID) {
+            return { data: response };
+        }
+        if (response.errorCode) {
+            return { error: response };
+        }
     }
     /**
      * Check Account Balance
      *
-     * @param String command
-     * @param String remarks
-     * @param String occassion
+     * @var String command
+     * @var String remarks
+     * @var String occassion
      *
      * @return array Result
      */
@@ -256,7 +288,7 @@ class Mpesa {
         const endpoint = (env == "live")
             ? "https://api.safaricom.co.kelipwa/accountbalance/v1/query"
             : "https://sandbox.safaricom.co.kelipwa/accountbalance/v1/query";
-        const data = {
+        const payload = {
             CommandID: command,
             Initiator: this.config.username,
             SecurityCredential: await this.generateSecurityCredential(),
@@ -266,16 +298,22 @@ class Mpesa {
             QueueTimeOutURL: this.config.timeoutUrl,
             ResultURL: this.config.resultsUrl,
         };
-        return await this.post(endpoint, data);
+        const response = await this.post(endpoint, payload);
+        if (response.MerchantRequestID) {
+            return { data: response };
+        }
+        if (response.errorCode) {
+            return { error: response };
+        }
     }
     /**
      * Validate Transaction Data
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    async validate(ok) {
+    validate(ok) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -289,11 +327,11 @@ class Mpesa {
     /**
      * Confirm Transaction Data
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    async confirm(ok) {
+    confirm(ok) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -307,11 +345,11 @@ class Mpesa {
     /**
      * Reconcile Transaction Using Instant Payment Notification from M-PESA
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    async reconcile(ok) {
+    reconcile(ok) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -325,11 +363,11 @@ class Mpesa {
     /**
      * Process Results of an API Request
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    async results(ok) {
+    results(ok) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -343,11 +381,11 @@ class Mpesa {
     /**
      * Process Transaction Timeout
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    async timeout(ok) {
+    timeout(ok) {
         return ok
             ? {
                 "ResultCode": 0,

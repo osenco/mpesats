@@ -2,10 +2,25 @@ export declare class Mpesa {
     /**
      * @var object config Configuration options
      */
-    config: any;
+    config: {
+        env: string;
+        type: number;
+        shortcode: string;
+        headoffice: string;
+        key: string;
+        secret: string;
+        username: string;
+        password: string;
+        passkey: string;
+        validationUrl: string;
+        confirmationUrl: string;
+        callbackUrl: string;
+        timeoutUrl: string;
+        resultsUrl: string;
+    };
     /**
      * Setup global configuration for classes
-     * @param Array configs Formatted configuration options
+     * @var Array configs Formatted configuration options
      *
      * @return void
      */
@@ -19,30 +34,36 @@ export declare class Mpesa {
     private generateSecurityCredential;
     /**
      * Perform a GET request to the M-PESA Daraja API
-     * @param String endpoint Daraja API URL Endpoint
-     * @param String credentials Formated Auth credentials
+     * @var String endpoint Daraja API URL Endpoint
+     * @var String credentials Formated Auth credentials
      *
      * @return string/bool
      */
     get(endpoint: string, credentials?: null): Promise<import("axios").AxiosResponse<any>>;
     /**
      * Perform a POST request to the M-PESA Daraja API
-     * @param String endpoint Daraja API URL Endpoint
-     * @param Array data Formated array of data to send
+     * @var String endpoint Daraja API URL Endpoint
+     * @var Array data Formated array of data to send
      *
      * @return string/bool
      */
-    post(endpoint: string, data: any): Promise<import("axios").AxiosResponse<any>>;
+    post(endpoint: string, payload: any): Promise<any>;
     /**
-     * @param Integer phone The MSISDN sending the funds.
-     * @param Integer amount The amount to be transacted.
-     * @param String reference Used with M-Pesa PayBills.
-     * @param String description A description of the transaction.
-     * @param String remark Remarks
+     * @var Integer phone The MSISDN sending the funds.
+     * @var Integer amount The amount to be transacted.
+     * @var String reference Used with M-Pesa PayBills.
+     * @var String description A description of the transaction.
+     * @var String remark Remarks
      *
      * @return array Response
      */
-    stkPush(phone: string | number, amount: number, reference?: string, description?: string, remark?: string): Promise<import("axios").AxiosResponse<any>>;
+    stkPush(phone: string | number, amount: number, reference?: string, description?: string, remark?: string): Promise<{
+        data: any;
+        error?: undefined;
+    } | {
+        error: any;
+        data?: undefined;
+    } | undefined>;
     b2cSend(phone: string, amount?: number, command?: string, remarks?: string, occassion?: string): Promise<{
         data: any;
         error?: undefined;
@@ -53,90 +74,108 @@ export declare class Mpesa {
     /**
      * Get Status of a Transaction
      *
-     * @param String transaction
-     * @param String command
-     * @param String remarks
-     * @param String occassion
+     * @var String transaction
+     * @var String command
+     * @var String remarks
+     * @var String occassion
      *
      * @return array Result
      */
-    checkStatus(transaction: string, command?: string, remarks?: string, occasion?: string): Promise<import("axios").AxiosResponse<any>>;
+    checkStatus(transaction: string, command?: string, remarks?: string, occasion?: string): Promise<{
+        data: any;
+        error?: undefined;
+    } | {
+        error: any;
+        data?: undefined;
+    } | undefined>;
     /**
      * Reverse a Transaction
      *
-     * @param String transaction
-     * @param Integer amount
-     * @param Integer receiver
-     * @param String receiver_type
-     * @param String remarks
-     * @param String occassion
+     * @var String transaction
+     * @var Integer amount
+     * @var Integer receiver
+     * @var String receiver_type
+     * @var String remarks
+     * @var String occassion
      *
      * @return array Result
      */
-    reverseTransaction(transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string): Promise<import("axios").AxiosResponse<any>>;
+    reverseTransaction(transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string): Promise<{
+        data: any;
+        error?: undefined;
+    } | {
+        error: any;
+        data?: undefined;
+    } | undefined>;
     /**
      * Check Account Balance
      *
-     * @param String command
-     * @param String remarks
-     * @param String occassion
+     * @var String command
+     * @var String remarks
+     * @var String occassion
      *
      * @return array Result
      */
-    checkBalance(command: string, remarks?: string): Promise<import("axios").AxiosResponse<any>>;
+    checkBalance(command: string, remarks?: string): Promise<{
+        data: any;
+        error?: undefined;
+    } | {
+        error: any;
+        data?: undefined;
+    } | undefined>;
     /**
      * Validate Transaction Data
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    validate(ok: boolean): Promise<{
+    validate(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
-    }>;
+    };
     /**
      * Confirm Transaction Data
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    confirm(ok: boolean): Promise<{
+    confirm(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
-    }>;
+    };
     /**
      * Reconcile Transaction Using Instant Payment Notification from M-PESA
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    reconcile(ok: boolean): Promise<{
+    reconcile(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
-    }>;
+    };
     /**
      * Process Results of an API Request
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    results(ok: boolean): Promise<{
+    results(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
-    }>;
+    };
     /**
      * Process Transaction Timeout
      *
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return array
      */
-    timeout(ok: boolean): Promise<{
+    timeout(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
-    }>;
+    };
 }
