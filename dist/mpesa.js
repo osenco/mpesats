@@ -43,8 +43,8 @@ class Mpesa {
         this.config = {
             env: "sandbox",
             type: 4,
-            shortcode: "174379",
-            headoffice: "174379",
+            shortcode: 174379,
+            store: 174379,
             key: "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
             secret: "bclwIPkcRqw61yUt",
             username: "apitest",
@@ -54,13 +54,13 @@ class Mpesa {
             confirmationUrl: "/lipwa/confirm",
             callbackUrl: "/lipwa/reconcile",
             timeoutUrl: "/lipwa/timeout",
-            resultsUrl: "/lipwa/results",
+            resultUrl: "/lipwa/results",
         };
         const defaults = {
             env: "sandbox",
             type: 4,
-            shortcode: "174379",
-            headoffice: "174379",
+            shortcode: 174379,
+            store: 174379,
             key: "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
             secret: "bclwIPkcRqw61yUt",
             username: "apitest",
@@ -70,19 +70,21 @@ class Mpesa {
             confirmationUrl: "/lipwa/confirm",
             callbackUrl: "/lipwa/reconcile",
             timeoutUrl: "/lipwa/timeout",
-            resultsUrl: "/lipwa/results",
+            resultUrl: "/lipwa/results",
         };
-        if (!configs && !configs.headoffice) {
-            configs.headoffice = configs.shortcode;
+        if (!configs || !configs.store) {
+            configs.store = configs.shortcode;
         }
         this.config = Object.assign(Object.assign({}, defaults), configs);
         this.http = axios_1.default.create({
-            baseURL: this.config.env == 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke',
+            baseURL: this.config.env == "live"
+                ? "https://api.safaricom.co.ke"
+                : "https://sandbox.safaricom.co.ke",
             withCredentials: true,
         });
         this.http.defaults.headers.common = {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
+            Accept: "application/json",
+            "Content-Type": "application/json"
         };
     }
     /**
@@ -91,29 +93,28 @@ class Mpesa {
      * @return string Access token
      */
     async authenticate() {
-        const auth = 'Basic ' + Buffer.from(this.config.key + ':' + this.config.secret).toString('base64');
+        const auth = "Basic " + Buffer.from(this.config.key + ":" + this.config.secret).toString("base64");
         try {
-            const { data } = await this.http.get(this.config.env == 'live'
-                ? 'oauth/v1/generate?grant_type=client_credentials'
-                : 'oauth/v1/generate?grant_type=client_credentials', {
+            const { data } = await this.http.get(this.config.env == "live"
+                ? "oauth/v1/generate?grant_type=client_credentials"
+                : "oauth/v1/generate?grant_type=client_credentials", {
                 headers: {
-                    'Authorization': auth
+                    "Authorization": auth
                 }
             });
             return data === null || data === void 0 ? void 0 : data.access_token;
         }
         catch (error) {
             return error;
-            console.log(error);
         }
     }
     async generateSecurityCredential() {
         return crypto
             .publicEncrypt({
-            key: fs.readFileSync(path.join(__dirname, 'certs', this.config.env, 'cert.cer'), 'utf8'),
+            key: fs.readFileSync(path.join(__dirname, "certs", this.config.env, "cert.cer"), "utf8"),
             padding: constants.RSA_PKCS1_PADDING
         }, Buffer.from(this.config.password))
-            .toString('base64');
+            .toString("base64");
     }
     /**
      * Perform a GET request to the M-PESA Daraja API
@@ -123,10 +124,10 @@ class Mpesa {
      * @return string/bool
      */
     async get(endpoint, credentials = null) {
-        const auth = 'Basic ' + Buffer.from(this.config.key + ':' + this.config.secret).toString('base64');
+        const auth = "Basic " + Buffer.from(this.config.key + ":" + this.config.secret).toString("base64");
         return await this.http.get(endpoint, {
             headers: {
-                'Authorization': auth
+                "Authorization": auth
             }
         });
     }
@@ -140,7 +141,7 @@ class Mpesa {
     async post(endpoint, payload) {
         return this.http.post(endpoint, payload, {
             headers: {
-                'Authorization': 'Bearer ' + await this.authenticate()
+                "Authorization": "Bearer " + await this.authenticate()
             }
         })
             .then(({ data }) => data)
@@ -163,12 +164,12 @@ class Mpesa {
         phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
         phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
         const timestamp = date_fns_1.format(new Date(), "yyyyMMddHHmmss");
-        const password = Buffer.from(this.config.shortcode + this.config.passkey + timestamp).toString('base64');
+        const password = Buffer.from(this.config.shortcode + this.config.passkey + timestamp).toString("base64");
         const endpoint = (this.config.env == "live")
             ? "mpesa/stkpush/v1/processrequest"
             : "mpesa/stkpush/v1/processrequest";
         const payload = {
-            BusinessShortCode: this.config.headoffice,
+            BusinessShortCode: this.config.store,
             Password: password,
             Timestamp: timestamp,
             TransactionType: (Number(this.config.type) == 4) ? "CustomerPayBillOnline" : "CustomerBuyGoodsOnline",
@@ -189,7 +190,59 @@ class Mpesa {
             return { data: null, error: response };
         }
     }
-    async b2cSend(phone, amount = 10, command = "BusinessPayment", remarks = "", occassion = "") {
+    async registerUrls(response_type = "Completed") {
+        const endpoint = (this.config.env == "live")
+            ? "mpesa/c2b/v1/registerurl"
+            : "mpesa/c2b/v1/registerurl";
+        const payload = {
+            "ShortCode": this.config.store,
+            "ResponseType": response_type,
+            "ConfirmationURL": this.config.confirmationUrl,
+            "ValidationURL": this.config.validationUrl,
+        };
+        const response = await this.post(endpoint, payload);
+        if (response.errorCode) {
+            return { data: null, error: response };
+        }
+        if (response.MerchantRequestID) {
+            return { data: response, error: null };
+        }
+    }
+    /**
+     * Simulates a C2B request
+     *
+     * @param Integer phone Receiving party phone
+     * @param Integer amount Amount to transfer
+     * @param String command Command ID
+     * @param String reference
+     * @param Callable callback Defined function or closure to process data and return true/false
+     *
+     * @return array
+     */
+    async simulate(phone, amount = 10, reference = "TRX", command = "", callback = null) {
+        phone = String(phone);
+        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
+        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
+        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        const endpoint = (this.config.env == "live")
+            ? "mpesa/c2b/v1/simulate"
+            : "mpesa/c2b/v1/simulate";
+        const payload = {
+            ShortCode: this.config.shortcode,
+            CommandID: command,
+            Amount: Number(amount),
+            Msisdn: phone,
+            BillRefNumber: reference,
+        };
+        const response = await this.post(endpoint, payload);
+        if (response.MerchantRequestID) {
+            return { data: response, error: null };
+        }
+        if (response.errorCode) {
+            return { data: null, error: response };
+        }
+    }
+    async sendB2C(phone, amount = 10, command = "BusinessPayment", remarks = "", occassion = "") {
         const env = this.config.env;
         phone = String(phone);
         phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
@@ -207,7 +260,7 @@ class Mpesa {
             PartyB: phone,
             Remarks: remarks,
             QueueTimeOutURL: this.config.timeoutUrl,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
             Occasion: occassion
         };
         const response = await this.post(endpoint, body);
@@ -216,6 +269,45 @@ class Mpesa {
         }
         else {
             return { error: response };
+        }
+    }
+    /**
+  * Transfer funds between two paybills
+  * @param receiver Receiving party paybill
+  * @param receiver_type Receiver party type
+  * @param amount Amount to transfer
+  * @param command Command ID
+  * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
+  * @param remarks
+  *
+  * @return array
+  */
+    async sendB2B(receiver, receiver_type, amount, command = "", reference = "TRX", remarks = "", callback = null) {
+        const env = this.config.env;
+        const plaintext = this.config.password;
+        const endpoint = (env == "live")
+            ? "mpesa/b2b/v1/paymentrequest"
+            : "mpesa/b2b/v1/paymentrequest";
+        const payload = {
+            Initiator: this.config.username,
+            SecurityCredential: await this.generateSecurityCredential(),
+            CommandID: command,
+            SenderIdentifierType: this.config.type,
+            RecieverIdentifierType: receiver_type,
+            Amount: amount,
+            PartyA: this.config.shortcode,
+            PartyB: receiver,
+            AccountReference: reference,
+            Remarks: remarks,
+            QueueTimeOutURL: this.config.timeoutUrl,
+            ResultURL: this.config.resultUrl,
+        };
+        const response = await this.post(endpoint, payload);
+        if (response.MerchantRequestID) {
+            return { data: response, error: null };
+        }
+        if (response.errorCode) {
+            return { data: null, error: response };
         }
     }
     /**
@@ -240,7 +332,7 @@ class Mpesa {
             TransactionID: transaction,
             PartyA: this.config.shortcode,
             IdentifierType: this.config.type,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
             QueueTimeOutURL: this.config.timeoutUrl,
             Remarks: remarks,
             Occasion: occasion,
@@ -278,7 +370,7 @@ class Mpesa {
             Amount: amount,
             ReceiverParty: receiver,
             RecieverIdentifierType: receiver_type,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
             QueueTimeOutURL: this.config.timeoutUrl,
             Remarks: remarks,
             Occasion: occasion
@@ -313,7 +405,7 @@ class Mpesa {
             IdentifierType: this.config.type,
             Remarks: remarks,
             QueueTimeOutURL: this.config.timeoutUrl,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
         };
         const response = await this.post(endpoint, payload);
         if (response.MerchantRequestID) {

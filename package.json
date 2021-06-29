@@ -1,6 +1,6 @@
 {
   "name": "@osenco/mpesa",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "description": "M-Pesa API typescript SDK",
   "main": "dist/index.js",
   "scripts": {

@@ -1,20 +1,20 @@
-import axios, { AxiosInstance } from 'axios';
-import * as constants from 'constants';
-import { Payload, PaymentResponse, StkPushPayload } from './types'
-import { format } from 'date-fns'
-import * as crypto from 'crypto';
-import * as fs from 'fs';
-import * as path from 'path';
+import axios, { AxiosInstance } from "axios";
+import * as constants from "constants";
+import { Payload, PaymentResponse, StkPushPayload, MpesaConfig } from "./types"
+import { format } from "date-fns"
+import * as crypto from "crypto";
+import * as fs from "fs";
+import * as path from "path";
 
 export class Mpesa {
     /**
      * @var object config Configuration options
      */
-    public config = {
+    public config: MpesaConfig = {
         env: "sandbox",
         type: 4,
-        shortcode: "174379",
-        headoffice: "174379",
+        shortcode: 174379,
+        store: 174379,
         key: "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
         secret: "bclwIPkcRqw61yUt",
         username: "apitest",
@@ -35,12 +35,12 @@ export class Mpesa {
      *
      * @return void
      */
-    constructor(configs: any) {
-        const defaults = {
+    constructor(configs: MpesaConfig) {
+        const defaults: MpesaConfig = {
             env: "sandbox",
             type: 4,
-            shortcode: "174379",
-            headoffice: "174379",
+            shortcode: 174379,
+            store: 174379,
             key: "9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
             secret: "bclwIPkcRqw61yUt",
             username: "apitest",
@@ -53,20 +53,22 @@ export class Mpesa {
             resultUrl: "/lipwa/results",
         };
 
-        if (!configs && !configs.headoffice) {
-            configs.headoffice = configs.shortcode;
+        if (!configs || !configs.store) {
+            configs.store = configs.shortcode;
         }
 
         this.config = { ...defaults, ...configs };
 
         this.http = axios.create({
-            baseURL: this.config.env == 'live' ? 'https://api.safaricom.co.ke' : 'https://sandbox.safaricom.co.ke',
+            baseURL: this.config.env == "live"
+                ? "https://api.safaricom.co.ke"
+                : "https://sandbox.safaricom.co.ke",
             withCredentials: true,
         });
 
         this.http.defaults.headers.common = {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
+            Accept: "application/json",
+            "Content-Type": "application/json"
         };
     }
 
@@ -77,17 +79,17 @@ export class Mpesa {
      */
 
     private async authenticate() {
-        const auth = 'Basic ' + Buffer.from(
-            this.config.key + ':' + this.config.secret
-        ).toString('base64')
+        const auth = "Basic " + Buffer.from(
+            this.config.key + ":" + this.config.secret
+        ).toString("base64")
 
         try {
-            const { data } = await this.http.get(this.config.env == 'live'
-                ? 'oauth/v1/generate?grant_type=client_credentials'
-                : 'oauth/v1/generate?grant_type=client_credentials',
+            const { data } = await this.http.get(this.config.env == "live"
+                ? "oauth/v1/generate?grant_type=client_credentials"
+                : "oauth/v1/generate?grant_type=client_credentials",
                 {
                     headers: {
-                        'Authorization': auth
+                        "Authorization": auth
                     }
                 }
             )
@@ -95,7 +97,6 @@ export class Mpesa {
             return data?.access_token;
         } catch (error) {
             return error
-            console.log(error);
         }
     }
 
@@ -106,18 +107,18 @@ export class Mpesa {
                     key: fs.readFileSync(
                         path.join(
                             __dirname,
-                            'certs',
+                            "certs",
                             this.config.env,
-                            'cert.cer'
+                            "cert.cer"
                         ),
-                        'utf8'
+                        "utf8"
                     ),
                     padding: constants.RSA_PKCS1_PADDING
                 },
 
                 Buffer.from(this.config.password)
             )
-            .toString('base64');
+            .toString("base64");
 
     }
 
@@ -129,15 +130,15 @@ export class Mpesa {
      * @return string/bool
      */
     public async get(endpoint: string, credentials = null) {
-        const auth = 'Basic ' + Buffer.from(
-            this.config.key + ':' + this.config.secret
-        ).toString('base64')
+        const auth = "Basic " + Buffer.from(
+            this.config.key + ":" + this.config.secret
+        ).toString("base64")
 
         return await this.http.get(
             endpoint,
             {
                 headers: {
-                    'Authorization': auth
+                    "Authorization": auth
                 }
             },
         )
@@ -156,7 +157,7 @@ export class Mpesa {
             payload,
             {
                 headers: {
-                    'Authorization': 'Bearer ' + await this.authenticate()
+                    "Authorization": "Bearer " + await this.authenticate()
                 }
             },
         )
@@ -190,14 +191,14 @@ export class Mpesa {
         const timestamp = format(new Date(), "yyyyMMddHHmmss");
         const password = Buffer.from(
             this.config.shortcode + this.config.passkey + timestamp
-        ).toString('base64')
+        ).toString("base64")
 
         const endpoint = (this.config.env == "live")
             ? "mpesa/stkpush/v1/processrequest"
             : "mpesa/stkpush/v1/processrequest";
 
         const payload = {
-            BusinessShortCode: this.config.headoffice,
+            BusinessShortCode: this.config.store,
             Password: password,
             Timestamp: timestamp,
             TransactionType: (Number(this.config.type) == 4) ? "CustomerPayBillOnline" : "CustomerBuyGoodsOnline",
@@ -230,7 +231,7 @@ export class Mpesa {
             : "mpesa/c2b/v1/registerurl";
 
         const payload = {
-            "ShortCode": this.config.headoffice,
+            "ShortCode": this.config.store,
             "ResponseType": response_type,
             "ConfirmationURL": this.config.confirmationUrl,
             "ValidationURL": this.config.validationUrl,
@@ -238,12 +239,12 @@ export class Mpesa {
 
         const response = await this.post(endpoint, payload);
 
-        if (response.MerchantRequestID) {
-            return { data: response, error: null }
-        }
-
         if (response.errorCode) {
             return { data: null, error: response }
+        }
+
+        if (response.MerchantRequestID) {
+            return { data: response, error: null }
         }
     }
 
@@ -294,7 +295,7 @@ export class Mpesa {
     }
 
     public async sendB2C(
-        phone: string,
+        phone: string | number,
         amount = 10,
         command = "BusinessPayment",
         remarks = "",

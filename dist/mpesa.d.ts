@@ -1,32 +1,17 @@
-import { AxiosInstance } from 'axios';
+import { MpesaConfig } from "./types";
 export declare class Mpesa {
     /**
      * @var object config Configuration options
      */
-    config: {
-        env: string;
-        type: number;
-        shortcode: string;
-        headoffice: string;
-        key: string;
-        secret: string;
-        username: string;
-        password: string;
-        passkey: string;
-        validationUrl: string;
-        confirmationUrl: string;
-        callbackUrl: string;
-        timeoutUrl: string;
-        resultsUrl: string;
-    };
-    http: AxiosInstance;
+    config: MpesaConfig;
+    private http;
     /**
      * Setup global configuration for classes
      * @var Array configs Formatted configuration options
      *
      * @return void
      */
-    constructor(configs: any);
+    constructor(configs: MpesaConfig);
     /**
      * Fetch Token To Authenticate Requests
      *
@@ -66,7 +51,50 @@ export declare class Mpesa {
         data: null;
         error: any;
     } | undefined>;
-    b2cSend(phone: string, amount?: number, command?: string, remarks?: string, occassion?: string): Promise<any>;
+    registerUrls(response_type?: string): Promise<{
+        data: null;
+        error: any;
+    } | {
+        data: any;
+        error: null;
+    } | undefined>;
+    /**
+     * Simulates a C2B request
+     *
+     * @param Integer phone Receiving party phone
+     * @param Integer amount Amount to transfer
+     * @param String command Command ID
+     * @param String reference
+     * @param Callable callback Defined function or closure to process data and return true/false
+     *
+     * @return array
+     */
+    simulate(phone: string | number, amount?: number, reference?: string, command?: string, callback?: null): Promise<{
+        data: any;
+        error: null;
+    } | {
+        data: null;
+        error: any;
+    } | undefined>;
+    sendB2C(phone: string | number, amount?: number, command?: string, remarks?: string, occassion?: string): Promise<any>;
+    /**
+  * Transfer funds between two paybills
+  * @param receiver Receiving party paybill
+  * @param receiver_type Receiver party type
+  * @param amount Amount to transfer
+  * @param command Command ID
+  * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
+  * @param remarks
+  *
+  * @return array
+  */
+    sendB2B(receiver: string | number, receiver_type: string | number, amount: number, command?: string, reference?: string, remarks?: string, callback?: null): Promise<{
+        data: any;
+        error: null;
+    } | {
+        data: null;
+        error: any;
+    } | undefined>;
     /**
      * Get Status of a Transaction
      *
