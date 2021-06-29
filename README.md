@@ -2,93 +2,6 @@
 
 This is a simple wrapper for Mpesa Daraja Api using typescript
 
-## Terms
-<table>
-    <thead>
-        <tr>
-            <th>Term</th>
-            <th>Description</th>
-            <th>Type</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th>env</th>
-            <td>Your API environment. Either `sandbox` or 'live'</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>type</th>
-            <td>Identifier type 2 for Till, 2 for Paybill</td>
-            <td>number</td>
-        </tr>
-        <tr>
-            <th>store</th>
-            <td>Store number if using a till number</td>
-            <td>number</td>
-        </tr>
-        <tr>
-            <th>shortcode</th>
-            <td>Your Buy Goods number or Paybill</td>
-            <td>number</td>
-        </tr>
-        <tr>
-            <th>key</th>
-            <td>App consumer key from Daraja</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>secret</th>
-            <td>App consumer secret from Daraja</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>passkey</th>
-            <td>Your online passkey</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>username</th>
-            <td>Org portal username</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>password</th>
-            <td>Org portal password</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>validationUrl</th>
-            <td></td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>confirmationUrl</th>
-            <td></td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>callbackUrl</th>
-            <td>A CallBack URL is a valid secure URL that is used to receive notifications from M-Pesa API. It is the endpoint to which the results will be sent by M-Pesa API.</td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>timeoutUrl</th>
-            <td>
-                This is the URL to be specified in your request that will be used by API Proxy to send notification incase the payment request is timed out while awaiting processing in the queue. 
-            </td>
-            <td>string</td>
-        </tr>
-        <tr>
-            <th>resultsUrl</th>
-            <td>
-                This is the URL to be specified in your request that will be used by M-PESA to send notification upon processing of the payment request.
-            </td>
-            <td>string</td>
-        </tr>
-    </tbody>
-</table>
-
 ## Installation
 
 ### Via npm
@@ -102,6 +15,93 @@ yarn add @osenco/mpesa
 ```
 
 ## Usage
+### Terms definitions
+<table>
+    <thead>
+        <tr>
+            <th>Term</th>
+            <th>Description</th>
+            <th>Type</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>env</td>
+            <td>Your API environment. Either `sandbox` or 'live'</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>type</td>
+            <td>Identifier type 2 for Till, 2 for Paybill</td>
+            <td>number</td>
+        </tr>
+        <tr>
+            <td>store</td>
+            <td>Store number if using a till number</td>
+            <td>number</td>
+        </tr>
+        <tr>
+            <td>shortcode</td>
+            <td>Your Buy Goods number or Paybill</td>
+            <td>number</td>
+        </tr>
+        <tr>
+            <td>key</td>
+            <td>App consumer key from Daraja</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>secret</td>
+            <td>App consumer secret from Daraja</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>passkey</td>
+            <td>Your online passkey</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>username</td>
+            <td>Org portal username</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>password</td>
+            <td>Org portal password</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>validationUrl</td>
+            <td>A valid secure URL that is used to validate your transaction details</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>confirmationUrl</td>
+            <td>A valid secure URL that is used to receive payment notifications from C2B API.</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>callbackUrl</td>
+            <td>A valid secure URL that is used to receive notifications from M-Pesa API. It is the endpoint to which the results will be sent by M-Pesa API.</td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>timeoutUrl</td>
+            <td>
+                This is the URL to be specified in your request that will be used by API Proxy to send notification incase the payment request is timed out while awaiting processing in the queue. 
+            </td>
+            <td>string</td>
+        </tr>
+        <tr>
+            <td>resultsUrl</td>
+            <td>
+                This is the URL to be specified in your request that will be used by M-PESA to send notification upon processing of the payment request.
+            </td>
+            <td>string</td>
+        </tr>
+    </tbody>
+</table>
+
 ### Import what you need
 ``` javascript
 import { Mpesa } from "@osenco/mpesa"
