@@ -77,12 +77,14 @@ yarn add @osenco/mpesa
         </tr>
         <tr>
             <td>confirmationUrl</td>
-            <td>A valid secure URL that is used to receive payment notifications from C2B API.</td>
+            <td>
+            A valid secure URL that is used to receive payment notifications from C2B API.</td>
             <td>string</td>
         </tr>
         <tr>
             <td>callbackUrl</td>
-            <td>A valid secure URL that is used to receive notifications from M-Pesa API. It is the endpoint to which the results will be sent by M-Pesa API.</td>
+            <td>
+            A valid secure URL that is used to receive payment notifications from M-Pesa API.</td>
             <td>string</td>
         </tr>
         <tr>
