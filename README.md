@@ -6,7 +6,7 @@ This is a simple wrapper for Mpesa Daraja Api using typescript
 
 ### Via npm
 ``` javascript
-npm intall --save @osenco/mpesa
+npm install --save @osenco/mpesa
 ``` 
 
 ### Or yarn
@@ -37,12 +37,12 @@ const mpesa = new Mpesa(
         confirmationUrl //"/lipwa/confirm",
         callbackUrl //"/lipwa/reconcile",
         timeoutUrl //"/lipwa/timeout",
-        resultsUrl //"/lipwa/results",
+        resultUrl //"/lipwa/results",
     }
 )
 ```
 
-### send an STK Push request
+### Send an STK Push request
 ``` javascript
 mpesa.stkPush(
     254705459494,
