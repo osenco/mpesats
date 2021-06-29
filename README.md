@@ -2,15 +2,25 @@
 
 This is a simple wrapper for Mpesa Daraja Api using typescript
 
+## Installation
+
+### Via npm
 ``` javascript
 npm intall --save @osenco/mpesa
+``` 
+
+### Or yarn
+``` javascript
 yarn add @osenco/mpesa
 ```
 
+## Usage
+### Import
 ``` javascript
 import { Mpesa } from '@osenco/mpesa'
 ```
 
+### Instantiation
 ``` javascript
 const mpesa = new Mpesa(
     {
@@ -32,6 +42,7 @@ const mpesa = new Mpesa(
 )
 ```
 
+### send an STK Push request
 ``` javascript
 mpesa.stkPush(
     254705459494,
@@ -60,3 +71,71 @@ mpesa.stkPush(
     }
 })
 ```
+
+Or wrap it inside an async function
+
+```javascript
+async () => {
+    const { error: { errorCode, errorMessage }, data: {
+        MerchantRequestID,
+        CheckoutRequestID,
+        ResponseCode,
+        ResponseDescription,
+        CustomerMessage
+    }
+    } = await mpesa.stkPush(
+        254705459494,
+        10,
+        "ACCOUNT",
+        "Transaction Description",
+        "Remark"
+    )
+}
+```
+
+### C2B register Callback URLs
+
+``` javascript
+mpesa.registerUrls().then(({
+    error,
+    data
+}) => {
+    if (data) {
+        const {
+            ResponseCode,
+            ResponseDescription
+        } = data
+        console.log(ResponseDescription)
+    }
+
+    if (error) {
+        const { errorCode, errorMessage } = error
+        console.log(errorCode, errorMessage);
+    }
+})
+```
+
+### Send B2C
+
+``` javascript
+mpesa.sendB2C(
+    phone, amount, command, remarks, occassion
+).then(({
+    error,
+    data
+}) => {
+    if (data) {
+        const {
+            ConversationID,OriginatorConversationID,ResponseCode,ResponseDescription
+        } = data
+        console.log(OriginatorConversationID)
+    }
+
+    if (error) {
+        const { errorCode, errorMessage } = error
+        console.log(errorCode, errorMessage);
+    }
+})
+```
+
+TIP: Save `OriginatorConversationID` in the database, and use it as a key for update

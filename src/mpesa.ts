@@ -24,10 +24,10 @@ export class Mpesa {
         confirmationUrl: "/lipwa/confirm",
         callbackUrl: "/lipwa/reconcile",
         timeoutUrl: "/lipwa/timeout",
-        resultsUrl: "/lipwa/results",
+        resultUrl: "/lipwa/results",
     };
 
-    public http: AxiosInstance
+    private http: AxiosInstance
 
     /**
      * Setup global configuration for classes
@@ -50,7 +50,7 @@ export class Mpesa {
             confirmationUrl: "/lipwa/confirm",
             callbackUrl: "/lipwa/reconcile",
             timeoutUrl: "/lipwa/timeout",
-            resultsUrl: "/lipwa/results",
+            resultUrl: "/lipwa/results",
         };
 
         if (!configs && !configs.headoffice) {
@@ -222,7 +222,78 @@ export class Mpesa {
         }
     }
 
-    public async b2cSend(
+    public async registerUrls(
+        response_type = "Completed"
+    ) {
+        const endpoint = (this.config.env == "live")
+            ? "mpesa/c2b/v1/registerurl"
+            : "mpesa/c2b/v1/registerurl";
+
+        const payload = {
+            "ShortCode": this.config.headoffice,
+            "ResponseType": response_type,
+            "ConfirmationURL": this.config.confirmationUrl,
+            "ValidationURL": this.config.validationUrl,
+        };
+
+        const response = await this.post(endpoint, payload);
+
+        if (response.MerchantRequestID) {
+            return { data: response, error: null }
+        }
+
+        if (response.errorCode) {
+            return { data: null, error: response }
+        }
+    }
+
+    /**
+     * Simulates a C2B request
+     * 
+     * @param Integer phone Receiving party phone
+     * @param Integer amount Amount to transfer
+     * @param String command Command ID
+     * @param String reference
+     * @param Callable callback Defined function or closure to process data and return true/false
+     *
+     * @return array
+     */
+    public async simulate(
+        phone: string | number,
+        amount = 10,
+        reference = "TRX",
+        command = "",
+        callback = null
+    ) {
+        phone = String(phone)
+        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
+        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
+        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+
+        const endpoint = (this.config.env == "live")
+            ? "mpesa/c2b/v1/simulate"
+            : "mpesa/c2b/v1/simulate";
+
+        const payload = {
+            ShortCode: this.config.shortcode,
+            CommandID: command,
+            Amount: Number(amount),
+            Msisdn: phone,
+            BillRefNumber: reference,
+        };
+
+        const response = await this.post(endpoint, payload);
+
+        if (response.MerchantRequestID) {
+            return { data: response, error: null }
+        }
+
+        if (response.errorCode) {
+            return { data: null, error: response }
+        }
+    }
+
+    public async sendB2C(
         phone: string,
         amount = 10,
         command = "BusinessPayment",
@@ -248,7 +319,7 @@ export class Mpesa {
             PartyB: phone,
             Remarks: remarks,
             QueueTimeOutURL: this.config.timeoutUrl,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
             Occasion: occassion
         }
 
@@ -258,6 +329,58 @@ export class Mpesa {
             return response
         } else {
             return { error: response }
+        }
+    }
+
+    /**
+  * Transfer funds between two paybills
+  * @param receiver Receiving party paybill
+  * @param receiver_type Receiver party type
+  * @param amount Amount to transfer
+  * @param command Command ID
+  * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
+  * @param remarks
+  *
+  * @return array
+  */
+    public async sendB2B(
+        receiver: string | number,
+        receiver_type: string | number,
+        amount: number,
+        command = "",
+        reference = "TRX",
+        remarks = "",
+        callback = null
+    ) {
+        const env = this.config.env;
+        const plaintext = this.config.password;
+        const endpoint = (env == "live")
+            ? "mpesa/b2b/v1/paymentrequest"
+            : "mpesa/b2b/v1/paymentrequest";
+
+        const payload = {
+            Initiator: this.config.username,
+            SecurityCredential: await this.generateSecurityCredential(),
+            CommandID: command,
+            SenderIdentifierType: this.config.type,
+            RecieverIdentifierType: receiver_type,
+            Amount: amount,
+            PartyA: this.config.shortcode,
+            PartyB: receiver,
+            AccountReference: reference,
+            Remarks: remarks,
+            QueueTimeOutURL: this.config.timeoutUrl,
+            ResultURL: this.config.resultUrl,
+        };
+
+        const response = await this.post(endpoint, payload);
+
+        if (response.MerchantRequestID) {
+            return { data: response, error: null }
+        }
+
+        if (response.errorCode) {
+            return { data: null, error: response }
         }
     }
 
@@ -290,7 +413,7 @@ export class Mpesa {
             TransactionID: transaction,
             PartyA: this.config.shortcode,
             IdentifierType: this.config.type,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
             QueueTimeOutURL: this.config.timeoutUrl,
             Remarks: remarks,
             Occasion: occasion,
@@ -341,7 +464,7 @@ export class Mpesa {
             Amount: amount,
             ReceiverParty: receiver,
             RecieverIdentifierType: receiver_type,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
             QueueTimeOutURL: this.config.timeoutUrl,
             Remarks: remarks,
             Occasion: occasion
@@ -385,7 +508,7 @@ export class Mpesa {
             IdentifierType: this.config.type,
             Remarks: remarks,
             QueueTimeOutURL: this.config.timeoutUrl,
-            ResultURL: this.config.resultsUrl,
+            ResultURL: this.config.resultUrl,
         };
 
         const response = await this.post(endpoint, payload);
