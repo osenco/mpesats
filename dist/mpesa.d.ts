@@ -1,10 +1,11 @@
-import { MpesaConfig } from "./types";
+import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
 export declare class Mpesa {
     /**
      * @var object config Configuration options
      */
     config: MpesaConfig;
     private http;
+    ref: string;
     /**
      * Setup global configuration for classes
      * @var Array configs Formatted configuration options
@@ -13,20 +14,13 @@ export declare class Mpesa {
      */
     constructor(configs: MpesaConfig);
     /**
-     * Fetch Token To Authenticate Requests
-     *
-     * @return string Access token
-     */
-    private authenticate;
-    private generateSecurityCredential;
-    /**
      * Perform a GET request to the M-PESA Daraja API
      * @var String endpoint Daraja API URL Endpoint
      * @var String credentials Formated Auth credentials
      *
      * @return string/bool
      */
-    get(endpoint: string, credentials?: null): Promise<import("axios").AxiosResponse<any>>;
+    get(endpoint: string): Promise<import("axios").AxiosResponse<any>>;
     /**
      * Perform a POST request to the M-PESA Daraja API
      * @var String endpoint Daraja API URL Endpoint
@@ -36,22 +30,29 @@ export declare class Mpesa {
      */
     post(endpoint: string, payload: any): Promise<any>;
     /**
+     * Fetch Token To Authenticate Requests
+     *
+     * @return string Access token
+     */
+    private authenticate;
+    private generateSecurityCredential;
+    /**
      * @var Integer phone The MSISDN sending the funds.
      * @var Integer amount The amount to be transacted.
      * @var String reference Used with M-Pesa PayBills.
      * @var String description A description of the transaction.
      * @var String remark Remarks
      *
-     * @return array Response
+     * @return Promise<any> Response
      */
-    stkPush(phone: string | number, amount: number, reference?: string, description?: string, remark?: string): Promise<{
+    stkPush(phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string): Promise<{
         data: any;
         error: null;
     } | {
         data: null;
         error: any;
     } | undefined>;
-    registerUrls(response_type?: string): Promise<{
+    registerUrls(response_type?: ResponseType): Promise<{
         data: null;
         error: any;
     } | {
@@ -67,16 +68,32 @@ export declare class Mpesa {
      * @param String reference
      * @param Callable callback Defined function or closure to process data and return true/false
      *
-     * @return array
+     * @return Promise<any>
      */
-    simulate(phone: string | number, amount?: number, reference?: string, command?: string, callback?: null): Promise<{
+    simulate(phone: string | number, amount?: number, reference?: string | number, command?: string): Promise<{
         data: any;
         error: null;
     } | {
         data: null;
         error: any;
     } | undefined>;
-    sendB2C(phone: string | number, amount?: number, command?: string, remarks?: string, occassion?: string): Promise<any>;
+    /**
+     * Transfer funds between two paybills
+     * @param receiver Receiving party phone
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param occassion
+     * @param remarks
+     *
+     * @return Promise<any>
+     */
+    sendB2C(phone: string | number, amount?: number, command?: B2CCommands, remarks?: string, occassion?: string): Promise<{
+        data: any;
+        error: null;
+    } | {
+        data: null;
+        error: any;
+    } | undefined>;
     /**
   * Transfer funds between two paybills
   * @param receiver Receiving party paybill
@@ -86,9 +103,9 @@ export declare class Mpesa {
   * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
   * @param remarks
   *
-  * @return array
+  * @return Promise<any>
   */
-    sendB2B(receiver: string | number, receiver_type: string | number, amount: number, command?: string, reference?: string, remarks?: string, callback?: null): Promise<{
+    sendB2B(receiver: string | number, receiver_type: string | number, amount: number, command?: B2BCommands, reference?: string | number, remarks?: string): Promise<{
         data: any;
         error: null;
     } | {
@@ -103,7 +120,7 @@ export declare class Mpesa {
      * @var String remarks
      * @var String occassion
      *
-     * @return array Result
+     * @return Promise<any> Result
      */
     checkStatus(transaction: string, command?: string, remarks?: string, occasion?: string): Promise<{
         data: any;
@@ -122,7 +139,7 @@ export declare class Mpesa {
      * @var String remarks
      * @var String occassion
      *
-     * @return array Result
+     * @return Promise<any> Result
      */
     reverseTransaction(transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string): Promise<{
         data: any;
@@ -138,7 +155,7 @@ export declare class Mpesa {
      * @var String remarks
      * @var String occassion
      *
-     * @return array Result
+     * @return Promise<any> Result
      */
     checkBalance(command: string, remarks?: string): Promise<{
         data: any;
@@ -152,7 +169,7 @@ export declare class Mpesa {
      *
      * @var Callable callback Defined function or closure to process data and return true/false
      *
-     * @return array
+     * @return Promise<any>
      */
     validate(ok: boolean): {
         ResultCode: number;
@@ -163,7 +180,7 @@ export declare class Mpesa {
      *
      * @var Callable callback Defined function or closure to process data and return true/false
      *
-     * @return array
+     * @return Promise<any>
      */
     confirm(ok: boolean): {
         ResultCode: number;
@@ -174,7 +191,7 @@ export declare class Mpesa {
      *
      * @var Callable callback Defined function or closure to process data and return true/false
      *
-     * @return array
+     * @return Promise<any>
      */
     reconcile(ok: boolean): {
         ResultCode: number;
@@ -185,7 +202,7 @@ export declare class Mpesa {
      *
      * @var Callable callback Defined function or closure to process data and return true/false
      *
-     * @return array
+     * @return Promise<any>
      */
     results(ok: boolean): {
         ResultCode: number;
@@ -196,7 +213,7 @@ export declare class Mpesa {
      *
      * @var Callable callback Defined function or closure to process data and return true/false
      *
-     * @return array
+     * @return Promise<any>
      */
     timeout(ok: boolean): {
         ResultCode: number;

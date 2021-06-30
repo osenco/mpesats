@@ -1,6 +1,6 @@
 # M-Pesa TypeScript SDK
 
-This is a simple wrapper for Mpesa Daraja Api using typescript
+This is a simple wrapper for Mpesa Daraja API using typescript
 
 ## Installation
 
@@ -117,11 +117,11 @@ const mpesa = new Mpesa(
         type //4,
         shortcode //174379,
         store //174379,
-        key //"9v38Dtu5u2BpsITPmLcXNWGMsjZRWSTG",
-        secret //"bclwIPkcRqw61yUt",
-        username //"apitest",
-        password //"",
-        passkey //"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+        key // Your app consumer key,
+        secret // Your app consumer secret,
+        username // Your M-Pesa org username,
+        password // Your M-Pesa org pass,
+        passkey // Your online passkey "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
         validationUrl //"/lipwa/validate",
         confirmationUrl //"/lipwa/confirm",
         callbackUrl //"/lipwa/reconcile",
@@ -136,9 +136,9 @@ const mpesa = new Mpesa(
 mpesa.stkPush(
     254705459494,
     10,
-    "ACCOUNT",
-    "Transaction Description",
-    "Remark"
+    "ACCOUNT", // You can ignore this, the code will generate a unique string
+    "Transaction Description", // Optional
+    "Remark" // optional
 ).then(({
     error,
     data
@@ -161,7 +161,7 @@ mpesa.stkPush(
 })
 ```
 
-Or wrap it inside an async function
+Or, if inside an async function
 
 ```javascript
 async () => {
@@ -179,6 +179,10 @@ async () => {
         "Transaction Description",
         "Remark"
     )
+
+    console.log(MerchantRequestID)
+
+    // TIP: Save MerchantRequestID and update when you receive the IPN
 }
 ```
 
@@ -210,7 +214,8 @@ mpesa.registerUrls("Completed" | "Cancelled").then(({
 mpesa.sendB2C(
     phone, 
     amount, 
-    "BusinessPayment" | "SalaryPayment" | "PromotionPayment", "Some remark", 
+    "BusinessPayment" | "SalaryPayment" | "PromotionPayment", 
+    "Some remark", 
     "Some occasion"
 ).then(({
     error,
@@ -224,6 +229,8 @@ mpesa.sendB2C(
             ResponseDescription
         } = data
         console.log(OriginatorConversationID)
+
+        // TIP: Save `OriginatorConversationID` in the database, and use it as a key once you receive the IPN
     }
 
     if (error) {
@@ -233,4 +240,34 @@ mpesa.sendB2C(
 })
 ```
 
-TIP: Save `OriginatorConversationID` in the database, and use it as a key for update
+### Send B2B
+
+``` javascript
+mpesa.sendB2B(
+    phone, 
+    amount, 
+    "BusinessPayBill" | "BusinessBuyGoods" | "DisburseFundsToBusiness" | "BusinessToBusinessTransfer" | "MerchantToMerchantTransfer", 
+    "Some remark", 
+    "Some occasion"
+).then(({
+    error,
+    data
+}) => {
+    if (data) {
+        const {
+            ConversationID,
+            OriginatorConversationID,
+            ResponseCode,
+            ResponseDescription
+        } = data
+        console.log(OriginatorConversationID)
+
+        // TIP: Save `OriginatorConversationID` in the database, and use it as a key for update
+    }
+
+    if (error) {
+        const { errorCode, errorMessage } = error
+        console.log(errorCode, errorMessage);
+    }
+})
+```
