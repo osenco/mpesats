@@ -106,7 +106,7 @@ yarn add @osenco/mpesa
 
 ### Import what you need
 ``` javascript
-import { Mpesa } from "@osenco/mpesa"
+import { Mpesa, useMpesa } from "@osenco/mpesa"
 ```
 
 ### Instantiation
@@ -130,10 +130,60 @@ const mpesa = new Mpesa(
     }
 )
 ```
+Or, individual APIs
 
+``` javascript
+const { stkPush, registerUrls } = useMpesa(
+    {
+        env //"sandbox",
+        type //4,
+        shortcode //174379,
+        store //174379,
+        key // Your app consumer key,
+        secret // Your app consumer secret,
+        username // Your M-Pesa org username,
+        password // Your M-Pesa org pass,
+        passkey // Your online passkey "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
+        validationUrl //"/lipwa/validate",
+        confirmationUrl //"/lipwa/confirm",
+        callbackUrl //"/lipwa/reconcile",
+        timeoutUrl //"/lipwa/timeout",
+        resultUrl //"/lipwa/results",
+    }
+)
+```
 ### Send an STK push request
 ``` javascript
 mpesa.stkPush(
+    254705459494,
+    10,
+    "ACCOUNT", // You can ignore this, the code will generate a unique string
+    "Transaction Description", // Optional
+    "Remark" // optional
+).then(({
+    error,
+    data
+}) => {
+    if (data) {
+        const {
+            MerchantRequestID,
+            CheckoutRequestID,
+            ResponseCode,
+            ResponseDescription,
+            CustomerMessage
+        } = data
+        console.log(MerchantRequestID)
+    }
+
+    if (error) {
+        const { errorCode, errorMessage } = error
+        console.log(errorCode, errorMessage);
+    }
+})
+
+// Or use the API directly
+
+stkPush(
     254705459494,
     10,
     "ACCOUNT", // You can ignore this, the code will generate a unique string
