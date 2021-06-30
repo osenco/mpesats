@@ -62,11 +62,11 @@ export declare class Mpesa {
     /**
      * Simulates a C2B request
      *
-     * @param Integer phone Receiving party phone
-     * @param Integer amount Amount to transfer
-     * @param String command Command ID
-     * @param String reference
-     * @param Callable callback Defined function or closure to process data and return true/false
+     * @var Integer phone Receiving party phone
+     * @var Integer amount Amount to transfer
+     * @var String command Command ID
+     * @var String reference
+     * @var Callable callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -79,11 +79,11 @@ export declare class Mpesa {
     } | undefined>;
     /**
      * Transfer funds between two paybills
-     * @param receiver Receiving party phone
-     * @param amount Amount to transfer
-     * @param command Command ID
-     * @param occassion
-     * @param remarks
+     * @var receiver Receiving party phone
+     * @var amount Amount to transfer
+     * @var command Command ID
+     * @var occassion
+     * @var remarks
      *
      * @return Promise<any>
      */
@@ -96,12 +96,12 @@ export declare class Mpesa {
     } | undefined>;
     /**
   * Transfer funds between two paybills
-  * @param receiver Receiving party paybill
-  * @param receiver_type Receiver party type
-  * @param amount Amount to transfer
-  * @param command Command ID
-  * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
-  * @param remarks
+  * @var receiver Receiving party paybill
+  * @var receiver_type Receiver party type
+  * @var amount Amount to transfer
+  * @var command Command ID
+  * @var reference Account Reference mandatory for “BusinessPaybill” CommandID.
+  * @var remarks
   *
   * @return Promise<any>
   */
