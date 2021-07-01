@@ -32,7 +32,7 @@ export const useMpesa = (configs: MpesaConfig) => {
         resultUrl: "/lipwa/results",
     };
 
-    if (!configs || !configs.store) {
+    if (!configs || !configs.store || configs.type == 4) {
         configs.store = configs.shortcode;
     }
 
@@ -91,7 +91,11 @@ export const useMpesa = (configs: MpesaConfig) => {
         )
             .then(({ data }) => data)
             .catch((e: any) => {
-                return e.response.data
+                if (e.response.data) {
+                    return e.response.data
+                } else {
+                    return { errorCode: 500, errorMessage: e.message }
+                }
             })
     }
 
@@ -564,9 +568,17 @@ export const useMpesa = (configs: MpesaConfig) => {
 
     return {
         stkPush,
-        registerUrls, simulateC2B, sendB2B, sendB2C,
-        checkBalance, checkStatus, reverseTransaction,
-        validateTransaction, confirmTransaction, 
-        reconcileTransaction, processResults, processTimeout
+        registerUrls,
+        simulateC2B,
+        sendB2B,
+        sendB2C,
+        checkBalance,
+        checkStatus,
+        reverseTransaction,
+        validateTransaction,
+        confirmTransaction,
+        reconcileTransaction,
+        processResults,
+        processTimeout
     }
 }

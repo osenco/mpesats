@@ -1,12 +1,10 @@
-import axios, { AxiosInstance } from "axios";
-import * as constants from "constants";
-import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types"
 import { format } from "date-fns"
-import * as crypto from "crypto";
-import * as fs from "fs";
-import * as path from "path";
+import { Service} from './service'
+import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types"
 
 export class Mpesa {
+    private service: Service
+
     /**
      * @var object config Configuration options
      */
@@ -27,7 +25,6 @@ export class Mpesa {
         resultUrl: "/lipwa/results",
     };
 
-    private http: AxiosInstance
     public ref = Math.random().toString(16).substr(2, 8).toUpperCase()
 
     /**
@@ -54,106 +51,13 @@ export class Mpesa {
             resultUrl: "/lipwa/results",
         };
 
-        if (!configs || !configs.store) {
+        if (!configs || !configs.store || configs.type == 4) {
             configs.store = configs.shortcode;
         }
 
         this.config = { ...defaults, ...configs };
 
-        this.http = axios.create({
-            baseURL: this.config.env == "live"
-                ? "https://api.safaricom.co.ke"
-                : "https://sandbox.safaricom.co.ke",
-            withCredentials: true,
-        });
-
-        this.http.defaults.headers.common = {
-            Accept: "application/json",
-            "Content-Type": "application/json"
-        };
-    }
-
-    /**
-     * Perform a GET request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var String credentials Formated Auth credentials
-     *
-     * @return string/bool
-     */
-    public async get(endpoint: string) {
-        const auth = "Basic " + Buffer.from(
-            this.config.key + ":" + this.config.secret
-        ).toString("base64")
-
-        return await this.http.get(
-            endpoint,
-            {
-                headers: {
-                    "Authorization": auth
-                }
-            },
-        )
-    }
-
-    /**
-     * Perform a POST request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var Array data Formated array of data to send
-     *
-     * @return string/bool
-     */
-    public async post(endpoint: string, payload: any) {
-        return this.http.post(
-            endpoint,
-            payload,
-            {
-                headers: {
-                    "Authorization": "Bearer " + await this.authenticate()
-                }
-            },
-        )
-            .then(({ data }) => data)
-            .catch((e: any) => {
-                return e.response.data
-            })
-    }
-
-    /**
-     * Fetch Token To Authenticate Requests
-     *
-     * @return string Access token
-     */
-
-    private async authenticate() {
-        try {
-            const { data } = await this.get("oauth/v1/generate?grant_type=client_credentials")
-
-            return data?.access_token;
-        } catch (error) {
-            return error
-        }
-    }
-
-    private async generateSecurityCredential() {
-        return crypto
-            .publicEncrypt(
-                {
-                    key: fs.readFileSync(
-                        path.join(
-                            __dirname,
-                            "certs",
-                            this.config.env,
-                            "cert.cer"
-                        ),
-                        "utf8"
-                    ),
-                    padding: constants.RSA_PKCS1_PADDING
-                },
-
-                Buffer.from(this.config.password)
-            )
-            .toString("base64");
-
+        this.service = new Service(this.config)
     }
 
     /**
@@ -182,7 +86,7 @@ export class Mpesa {
             this.config.shortcode + this.config.passkey + timestamp
         ).toString("base64")
 
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/stkpush/v1/processrequest",
             {
                 BusinessShortCode: this.config.store,
@@ -211,7 +115,7 @@ export class Mpesa {
     public async registerUrls(
         response_type: ResponseType = "Completed"
     ) {
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/c2b/v1/registerurl",
             {
                 "ShortCode": this.config.store,
@@ -251,7 +155,7 @@ export class Mpesa {
         phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
         phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
 
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/c2b/v1/simulate",
             {
                 ShortCode: this.config.shortcode,
@@ -292,11 +196,11 @@ export class Mpesa {
         phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
         phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
 
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/b2c/v1/paymentrequest",
             {
                 InitiatorName: this.config.username,
-                SecurityCredential: await this.generateSecurityCredential(),
+                SecurityCredential: await this.service.generateSecurityCredential(),
                 CommandID: command,
                 Amount: Number(amount),
                 PartyA: this.config.shortcode,
@@ -344,11 +248,11 @@ export class Mpesa {
         reference: string | number = "TRX",
         remarks = ""
     ) {
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/b2b/v1/paymentrequest",
             {
                 Initiator: this.config.username,
-                SecurityCredential: await this.generateSecurityCredential(),
+                SecurityCredential: await this.service.generateSecurityCredential(),
                 CommandID: command,
                 SenderIdentifierType: this.config.type,
                 RecieverIdentifierType: receiver_type,
@@ -386,11 +290,11 @@ export class Mpesa {
         remarks = "Transaction Status Query",
         occasion = "Transaction Status Query"
     ) {
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/transactionstatus/v1/query",
             {
                 Initiator: this.config.username,
-                SecurityCredential: await this.generateSecurityCredential(),
+                SecurityCredential: await this.service.generateSecurityCredential(),
                 CommandID: command,
                 TransactionID: transaction,
                 PartyA: this.config.shortcode,
@@ -430,12 +334,12 @@ export class Mpesa {
         remarks = "Transaction Reversal",
         occasion = "Transaction Reversal"
     ) {
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/reversal/v1/request",
             {
                 CommandID: "TransactionReversal",
                 Initiator: this.config.username,
-                SecurityCredential: await this.generateSecurityCredential(),
+                SecurityCredential: await this.service.generateSecurityCredential(),
                 TransactionID: transaction,
                 Amount: amount,
                 ReceiverParty: receiver,
@@ -468,12 +372,12 @@ export class Mpesa {
         command: string,
         remarks = "Balance Query",
     ) {
-        const response = await this.post(
+        const response = await this.service.post(
             "mpesa/accountbalance/v1/query",
             {
                 CommandID: command,
                 Initiator: this.config.username,
-                SecurityCredential: await this.generateSecurityCredential(),
+                SecurityCredential: await this.service.generateSecurityCredential(),
                 PartyA: this.config.shortcode,
                 IdentifierType: this.config.type,
                 Remarks: remarks,
