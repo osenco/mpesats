@@ -1,19 +1,7 @@
-import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
+import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
 export declare const useMpesa: (configs: MpesaConfig) => {
-    stkPush: (phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string) => Promise<{
-        data: any;
-        error: null;
-    } | {
-        data: null;
-        error: any;
-    } | undefined>;
-    registerUrls: (response_type?: ResponseType) => Promise<{
-        data: null;
-        error: any;
-    } | {
-        data: any;
-        error: null;
-    } | undefined>;
+    stkPush: (phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string) => Promise<MpesaResponse>;
+    registerUrls: (response_type?: ResponseType) => Promise<MpesaResponse>;
     simulateC2B: (phone: string | number, amount?: number, reference?: string | number, command?: string) => Promise<{
         data: any;
         error: null;
@@ -21,59 +9,29 @@ export declare const useMpesa: (configs: MpesaConfig) => {
         data: null;
         error: any;
     } | undefined>;
-    sendB2B: (receiver: string | number, receiver_type: string | number, amount: number, command?: B2BCommands, reference?: string | number, remarks?: string) => Promise<{
-        data: any;
-        error: null;
-    } | {
-        data: null;
-        error: any;
-    } | undefined>;
-    sendB2C: (phone: string | number, amount?: number, command?: B2CCommands, remarks?: string, occassion?: string) => Promise<{
-        data: any;
-        error: null;
-    } | {
-        data: null;
-        error: any;
-    } | undefined>;
-    checkBalance: (command: string, remarks?: string) => Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: any;
-        data?: undefined;
-    } | undefined>;
-    checkStatus: (transaction: string, command?: string, remarks?: string, occasion?: string) => Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: any;
-        data?: undefined;
-    } | undefined>;
-    reverseTransaction: (transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string) => Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: any;
-        data?: undefined;
-    } | undefined>;
-    validateTransaction: (ok: boolean) => Promise<{
+    sendB2B: (receiver: string | number, receiver_type: string | number, amount: number, command?: B2BCommands, reference?: string | number, remarks?: string) => Promise<MpesaResponse>;
+    sendB2C: (phone: string | number, amount?: number, command?: B2CCommands, remarks?: string, occassion?: string) => Promise<MpesaResponse>;
+    checkBalance: (command: string, remarks?: string) => Promise<MpesaResponse>;
+    checkStatus: (transaction: string, command?: string, remarks?: string, occasion?: string) => Promise<MpesaResponse>;
+    reverseTransaction: (transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string) => Promise<MpesaResponse>;
+    validateTransaction: (ok: boolean) => {
         ResultCode: number;
         ResultDesc: string;
-    }>;
-    confirmTransaction: (ok: boolean) => Promise<{
+    };
+    confirmTransaction: (ok: boolean) => {
         ResultCode: number;
         ResultDesc: string;
-    }>;
-    reconcileTransaction: (ok: boolean) => Promise<{
+    };
+    reconcileTransaction: (ok: boolean) => {
         ResultCode: number;
         ResultDesc: string;
-    }>;
-    processResults: (ok: boolean) => Promise<{
+    };
+    processResults: (ok: boolean) => {
         ResultCode: number;
         ResultDesc: string;
-    }>;
-    processTimeout: (ok: boolean) => Promise<{
+    };
+    processTimeout: (ok: boolean) => {
         ResultCode: number;
         ResultDesc: string;
-    }>;
+    };
 };

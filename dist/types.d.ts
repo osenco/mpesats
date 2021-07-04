@@ -14,6 +14,10 @@ export declare type MpesaConfig = {
     timeoutUrl: string;
     resultUrl: string;
 };
+export declare type MpesaResponse = {
+    data: any;
+    error: any;
+};
 export declare type ResponseType = "Completed" | "Cancelled";
 export declare type B2BCommands = "BusinessPayBill" | "BusinessBuyGoods" | "DisburseFundsToBusiness" | "BusinessToBusinessTransfer" | "MerchantToMerchantTransfer";
 export declare type B2CCommands = "BusinessPayment" | "SalaryPayment" | "PromotionPayment";

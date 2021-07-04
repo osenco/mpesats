@@ -1,6 +1,6 @@
 import { format } from "date-fns"
-import { Service} from './service'
-import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types"
+import { Service } from './service'
+import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types"
 
 export class Mpesa {
     private service: Service
@@ -75,11 +75,9 @@ export class Mpesa {
         reference: string | number = this.ref,
         description = "Transaction Description",
         remark = "Remark"
-    ) {
+    ): Promise<MpesaResponse> {
         phone = String(phone)
-        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
-        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
-        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        phone = "254" + phone.substr(phone.length - 9, phone.length);
 
         const timestamp = format(new Date(), "yyyyMMddHHmmss");
         const password = Buffer.from(
@@ -110,11 +108,13 @@ export class Mpesa {
         if (response.errorCode) {
             return { data: null, error: response }
         }
+
+        return response
     }
 
     public async registerUrls(
         response_type: ResponseType = "Completed"
-    ) {
+    ): Promise<MpesaResponse> {
         const response = await this.service.post(
             "mpesa/c2b/v1/registerurl",
             {
@@ -131,6 +131,8 @@ export class Mpesa {
         if (response.MerchantRequestID) {
             return { data: response, error: null }
         }
+
+        return response
     }
 
     /**
@@ -144,16 +146,14 @@ export class Mpesa {
      *
      * @return Promise<any>
      */
-    public async simulate(
+    public async simulateC2B(
         phone: string | number,
         amount = 10,
         reference: string | number = "TRX",
         command = ""
     ) {
         phone = String(phone)
-        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
-        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
-        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        phone = "254" + phone.substr(phone.length - 9, phone.length);
 
         const response = await this.service.post(
             "mpesa/c2b/v1/simulate",
@@ -190,11 +190,9 @@ export class Mpesa {
         command: B2CCommands = "BusinessPayment",
         remarks = "",
         occassion = ""
-    ) {
+    ): Promise<MpesaResponse> {
         phone = String(phone)
-        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
-        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
-        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        phone = "254" + phone.substr(phone.length - 9, phone.length);
 
         const response = await this.service.post(
             "mpesa/b2c/v1/paymentrequest",
@@ -227,6 +225,8 @@ export class Mpesa {
         if (response.errorCode) {
             return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -247,7 +247,7 @@ export class Mpesa {
         command: B2BCommands = "BusinessBuyGoods",
         reference: string | number = "TRX",
         remarks = ""
-    ) {
+    ): Promise<MpesaResponse> {
         const response = await this.service.post(
             "mpesa/b2b/v1/paymentrequest",
             {
@@ -272,6 +272,8 @@ export class Mpesa {
         if (response.errorCode) {
             return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -289,7 +291,7 @@ export class Mpesa {
         command = "TransactionStatusQuery",
         remarks = "Transaction Status Query",
         occasion = "Transaction Status Query"
-    ) {
+    ): Promise<MpesaResponse> {
         const response = await this.service.post(
             "mpesa/transactionstatus/v1/query",
             {
@@ -306,12 +308,14 @@ export class Mpesa {
             });
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -333,7 +337,7 @@ export class Mpesa {
         receiver_type = 3,
         remarks = "Transaction Reversal",
         occasion = "Transaction Reversal"
-    ) {
+    ): Promise<MpesaResponse> {
         const response = await this.service.post(
             "mpesa/reversal/v1/request",
             {
@@ -351,12 +355,14 @@ export class Mpesa {
             });
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -371,7 +377,7 @@ export class Mpesa {
     public async checkBalance(
         command: string,
         remarks = "Balance Query",
-    ) {
+    ): Promise<MpesaResponse> {
         const response = await this.service.post(
             "mpesa/accountbalance/v1/query",
             {
@@ -386,12 +392,14 @@ export class Mpesa {
             });
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -401,7 +409,7 @@ export class Mpesa {
      *
      * @return Promise<any>
      */
-    public validate(ok: boolean) {
+    public validateTransaction(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -420,7 +428,7 @@ export class Mpesa {
      *
      * @return Promise<any>
      */
-    public confirm(ok: boolean) {
+    public confirmTransaction(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -439,7 +447,7 @@ export class Mpesa {
      *
      * @return Promise<any>
      */
-    public reconcile(ok: boolean) {
+    public reconcileTransaction(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -458,7 +466,7 @@ export class Mpesa {
      *
      * @return Promise<any>
      */
-    public results(ok: boolean) {
+    public processResults(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -477,7 +485,7 @@ export class Mpesa {
      *
      * @return Promise<any>
      */
-    public timeout(ok: boolean) {
+    public processTimeout(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,

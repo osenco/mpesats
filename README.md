@@ -160,10 +160,7 @@ mpesa.stkPush(
     "ACCOUNT", // You can ignore this, the code will generate a unique string
     "Transaction Description", // Optional
     "Remark" // optional
-).then(({
-    error,
-    data
-}) => {
+).then(({ error, data }) => {
     if (data) {
         const {
             MerchantRequestID,

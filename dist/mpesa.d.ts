@@ -1,10 +1,10 @@
-import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
+import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
 export declare class Mpesa {
+    private service;
     /**
      * @var object config Configuration options
      */
     config: MpesaConfig;
-    private http;
     ref: string;
     /**
      * Setup global configuration for classes
@@ -14,29 +14,6 @@ export declare class Mpesa {
      */
     constructor(configs: MpesaConfig);
     /**
-     * Perform a GET request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var String credentials Formated Auth credentials
-     *
-     * @return string/bool
-     */
-    get(endpoint: string): Promise<import("axios").AxiosResponse<any>>;
-    /**
-     * Perform a POST request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var Array data Formated array of data to send
-     *
-     * @return string/bool
-     */
-    post(endpoint: string, payload: any): Promise<any>;
-    /**
-     * Fetch Token To Authenticate Requests
-     *
-     * @return string Access token
-     */
-    private authenticate;
-    private generateSecurityCredential;
-    /**
      * @var Integer phone The MSISDN sending the funds.
      * @var Integer amount The amount to be transacted.
      * @var String reference Used with M-Pesa PayBills.
@@ -45,20 +22,8 @@ export declare class Mpesa {
      *
      * @return Promise<any> Response
      */
-    stkPush(phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string): Promise<{
-        data: any;
-        error: null;
-    } | {
-        data: null;
-        error: any;
-    } | undefined>;
-    registerUrls(response_type?: ResponseType): Promise<{
-        data: null;
-        error: any;
-    } | {
-        data: any;
-        error: null;
-    } | undefined>;
+    stkPush(phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string): Promise<MpesaResponse>;
+    registerUrls(response_type?: ResponseType): Promise<MpesaResponse>;
     /**
      * Simulates a C2B request
      *
@@ -70,7 +35,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    simulate(phone: string | number, amount?: number, reference?: string | number, command?: string): Promise<{
+    simulateC2B(phone: string | number, amount?: number, reference?: string | number, command?: string): Promise<{
         data: any;
         error: null;
     } | {
@@ -87,13 +52,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    sendB2C(phone: string | number, amount?: number, command?: B2CCommands, remarks?: string, occassion?: string): Promise<{
-        data: any;
-        error: null;
-    } | {
-        data: null;
-        error: any;
-    } | undefined>;
+    sendB2C(phone: string | number, amount?: number, command?: B2CCommands, remarks?: string, occassion?: string): Promise<MpesaResponse>;
     /**
   * Transfer funds between two paybills
   * @var receiver Receiving party paybill
@@ -105,13 +64,7 @@ export declare class Mpesa {
   *
   * @return Promise<any>
   */
-    sendB2B(receiver: string | number, receiver_type: string | number, amount: number, command?: B2BCommands, reference?: string | number, remarks?: string): Promise<{
-        data: any;
-        error: null;
-    } | {
-        data: null;
-        error: any;
-    } | undefined>;
+    sendB2B(receiver: string | number, receiver_type: string | number, amount: number, command?: B2BCommands, reference?: string | number, remarks?: string): Promise<MpesaResponse>;
     /**
      * Get Status of a Transaction
      *
@@ -122,13 +75,7 @@ export declare class Mpesa {
      *
      * @return Promise<any> Result
      */
-    checkStatus(transaction: string, command?: string, remarks?: string, occasion?: string): Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: any;
-        data?: undefined;
-    } | undefined>;
+    checkStatus(transaction: string, command?: string, remarks?: string, occasion?: string): Promise<MpesaResponse>;
     /**
      * Reverse a Transaction
      *
@@ -141,13 +88,7 @@ export declare class Mpesa {
      *
      * @return Promise<any> Result
      */
-    reverseTransaction(transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string): Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: any;
-        data?: undefined;
-    } | undefined>;
+    reverseTransaction(transaction: string, amount: number, receiver: number, receiver_type?: number, remarks?: string, occasion?: string): Promise<MpesaResponse>;
     /**
      * Check Account Balance
      *
@@ -157,13 +98,7 @@ export declare class Mpesa {
      *
      * @return Promise<any> Result
      */
-    checkBalance(command: string, remarks?: string): Promise<{
-        data: any;
-        error?: undefined;
-    } | {
-        error: any;
-        data?: undefined;
-    } | undefined>;
+    checkBalance(command: string, remarks?: string): Promise<MpesaResponse>;
     /**
      * Validate Transaction Data
      *
@@ -171,7 +106,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    validate(ok: boolean): {
+    validateTransaction(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
     };
@@ -182,7 +117,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    confirm(ok: boolean): {
+    confirmTransaction(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
     };
@@ -193,7 +128,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    reconcile(ok: boolean): {
+    reconcileTransaction(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
     };
@@ -204,7 +139,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    results(ok: boolean): {
+    processResults(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
     };
@@ -215,7 +150,7 @@ export declare class Mpesa {
      *
      * @return Promise<any>
      */
-    timeout(ok: boolean): {
+    processTimeout(ok: boolean): {
         ResultCode: number;
         ResultDesc: string;
     };

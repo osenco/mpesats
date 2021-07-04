@@ -21,7 +21,7 @@ const mpesa = new Mpesa(
 
 try {
     mpesa.stkPush(
-        254115911300,
+        '0115911300',
         10
     )
         .then(({ error, data }) => {

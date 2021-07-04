@@ -1,10 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 import * as constants from "constants";
-import { B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types"
+import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types"
 import { format } from "date-fns"
 import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
+import { Service } from './service'
 
 export const useMpesa = (configs: MpesaConfig) => {
     const ref = Math.random().toString(16).substr(2, 8).toUpperCase()
@@ -38,6 +39,8 @@ export const useMpesa = (configs: MpesaConfig) => {
 
     const config = { ...defaults, ...configs };
 
+    const service = new Service(config)
+
     const http: AxiosInstance = axios.create({
         baseURL: config.env == "live"
             ? "https://api.safaricom.co.ke"
@@ -49,93 +52,6 @@ export const useMpesa = (configs: MpesaConfig) => {
         Accept: "application/json",
         "Content-Type": "application/json"
     };
-
-    /**
-     * Perform a GET request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var String credentials Formated Auth credentials
-     *
-     * @return string/bool
-     */
-    async function get(endpoint: string) {
-        const auth = "Basic " + Buffer.from(
-            config.key + ":" + config.secret
-        ).toString("base64")
-
-        return await http.get(
-            endpoint,
-            {
-                headers: {
-                    "Authorization": auth
-                }
-            },
-        )
-    }
-
-    /**
-     * Perform a POST request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var Array data Formated array of data to send
-     *
-     * @return string/bool
-     */
-    async function post(endpoint: string, payload: any) {
-        return http.post(
-            endpoint,
-            payload,
-            {
-                headers: {
-                    "Authorization": "Bearer " + await authenticate()
-                }
-            },
-        )
-            .then(({ data }) => data)
-            .catch((e: any) => {
-                if (e.response.data) {
-                    return e.response.data
-                } else {
-                    return { errorCode: 500, errorMessage: e.message }
-                }
-            })
-    }
-
-    /**
-     * Fetch Token To Authenticate Requests
-     *
-     * @return string Access token
-     */
-
-    async function authenticate() {
-        try {
-            const { data } = await get("oauth/v1/generate?grant_type=client_credentials")
-
-            return data?.access_token;
-        } catch (error) {
-            return error
-        }
-    }
-
-    async function generateSecurityCredential() {
-        return crypto
-            .publicEncrypt(
-                {
-                    key: fs.readFileSync(
-                        path.join(
-                            __dirname,
-                            "certs",
-                            config.env,
-                            "cert.cer"
-                        ),
-                        "utf8"
-                    ),
-                    padding: constants.RSA_PKCS1_PADDING
-                },
-
-                Buffer.from(config.password)
-            )
-            .toString("base64");
-
-    }
 
     /**
      * @var Integer phone The MSISDN sending the funds.
@@ -152,18 +68,16 @@ export const useMpesa = (configs: MpesaConfig) => {
         reference: string | number = ref,
         description = "Transaction Description",
         remark = "Remark"
-    ) {
+    ): Promise<MpesaResponse> {
         phone = String(phone)
-        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
-        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
-        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        phone = "254" + phone.substr(phone.length - 9, phone.length);
 
         const timestamp = format(new Date(), "yyyyMMddHHmmss");
         const password = Buffer.from(
             config.shortcode + config.passkey + timestamp
         ).toString("base64")
 
-        const response = await post(
+        const response = await service.post(
             "mpesa/stkpush/v1/processrequest",
             {
                 BusinessShortCode: config.store,
@@ -187,12 +101,14 @@ export const useMpesa = (configs: MpesaConfig) => {
         if (response.errorCode) {
             return { data: null, error: response }
         }
+
+        return response
     }
 
     async function registerUrls(
         response_type: ResponseType = "Completed"
-    ) {
-        const response = await post(
+    ): Promise<MpesaResponse> {
+        const response = await service.post(
             "mpesa/c2b/v1/registerurl",
             {
                 "ShortCode": config.store,
@@ -208,6 +124,8 @@ export const useMpesa = (configs: MpesaConfig) => {
         if (response.MerchantRequestID) {
             return { data: response, error: null }
         }
+
+        return response
     }
 
     /**
@@ -228,11 +146,9 @@ export const useMpesa = (configs: MpesaConfig) => {
         command = ""
     ) {
         phone = String(phone)
-        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
-        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
-        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        phone = "254" + phone.substr(phone.length - 9, phone.length);
 
-        const response = await post(
+        const response = await service.post(
             "mpesa/c2b/v1/simulate",
             {
                 ShortCode: config.shortcode,
@@ -267,17 +183,15 @@ export const useMpesa = (configs: MpesaConfig) => {
         command: B2CCommands = "BusinessPayment",
         remarks = "",
         occassion = ""
-    ) {
+    ): Promise<MpesaResponse> {
         phone = String(phone)
-        phone = (phone.charAt(0) == "+") ? phone.replace("+", "") : phone;
-        phone = (phone.charAt(0) == "0") ? phone.replace("/^0/", "254") : phone;
-        phone = (phone.charAt(0) == "7") ? "254" + phone : phone;
+        phone = "254" + phone.substr(phone.length - 9, phone.length);
 
-        const response = await post(
+        const response = await service.post(
             "mpesa/b2c/v1/paymentrequest",
             {
                 InitiatorName: config.username,
-                SecurityCredential: await generateSecurityCredential(),
+                SecurityCredential: await service.generateSecurityCredential(),
                 CommandID: command,
                 Amount: Number(amount),
                 PartyA: config.shortcode,
@@ -304,6 +218,8 @@ export const useMpesa = (configs: MpesaConfig) => {
         if (response.errorCode) {
             return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -324,12 +240,12 @@ export const useMpesa = (configs: MpesaConfig) => {
         command: B2BCommands = "BusinessBuyGoods",
         reference: string | number = "TRX",
         remarks = ""
-    ) {
-        const response = await post(
+    ): Promise<MpesaResponse> {
+        const response = await service.post(
             "mpesa/b2b/v1/paymentrequest",
             {
                 Initiator: config.username,
-                SecurityCredential: await generateSecurityCredential(),
+                SecurityCredential: await service.generateSecurityCredential(),
                 CommandID: command,
                 SenderIdentifierType: config.type,
                 RecieverIdentifierType: receiver_type,
@@ -349,6 +265,8 @@ export const useMpesa = (configs: MpesaConfig) => {
         if (response.errorCode) {
             return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -366,12 +284,12 @@ export const useMpesa = (configs: MpesaConfig) => {
         command = "TransactionStatusQuery",
         remarks = "Transaction Status Query",
         occasion = "Transaction Status Query"
-    ) {
-        const response = await post(
+    ): Promise<MpesaResponse> {
+        const response = await service.post(
             "mpesa/transactionstatus/v1/query",
             {
                 Initiator: config.username,
-                SecurityCredential: await generateSecurityCredential(),
+                SecurityCredential: await service.generateSecurityCredential(),
                 CommandID: command,
                 TransactionID: transaction,
                 PartyA: config.shortcode,
@@ -383,12 +301,14 @@ export const useMpesa = (configs: MpesaConfig) => {
             });
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -410,13 +330,13 @@ export const useMpesa = (configs: MpesaConfig) => {
         receiver_type = 3,
         remarks = "Transaction Reversal",
         occasion = "Transaction Reversal"
-    ) {
-        const response = await post(
+    ): Promise<MpesaResponse> {
+        const response = await service.post(
             "mpesa/reversal/v1/request",
             {
                 CommandID: "TransactionReversal",
                 Initiator: config.username,
-                SecurityCredential: await generateSecurityCredential(),
+                SecurityCredential: await service.generateSecurityCredential(),
                 TransactionID: transaction,
                 Amount: amount,
                 ReceiverParty: receiver,
@@ -428,12 +348,14 @@ export const useMpesa = (configs: MpesaConfig) => {
             });
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -448,13 +370,13 @@ export const useMpesa = (configs: MpesaConfig) => {
     async function checkBalance(
         command: string,
         remarks = "Balance Query",
-    ) {
-        const response = await post(
+    ): Promise<MpesaResponse> {
+        const response = await service.post(
             "mpesa/accountbalance/v1/query",
             {
                 CommandID: command,
                 Initiator: config.username,
-                SecurityCredential: await generateSecurityCredential(),
+                SecurityCredential: await service.generateSecurityCredential(),
                 PartyA: config.shortcode,
                 IdentifierType: config.type,
                 Remarks: remarks,
@@ -463,12 +385,14 @@ export const useMpesa = (configs: MpesaConfig) => {
             });
 
         if (response.MerchantRequestID) {
-            return { data: response }
+            return { data: response, error: null }
         }
 
         if (response.errorCode) {
-            return { error: response }
+            return { data: null, error: response }
         }
+
+        return response
     }
 
     /**
@@ -478,7 +402,7 @@ export const useMpesa = (configs: MpesaConfig) => {
      *
      * @return Promise<any>
      */
-    async function validateTransaction(ok: boolean) {
+    function validateTransaction(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -497,7 +421,7 @@ export const useMpesa = (configs: MpesaConfig) => {
      *
      * @return Promise<any>
      */
-    async function confirmTransaction(ok: boolean) {
+    function confirmTransaction(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -516,7 +440,7 @@ export const useMpesa = (configs: MpesaConfig) => {
      *
      * @return Promise<any>
      */
-    async function reconcileTransaction(ok: boolean) {
+    function reconcileTransaction(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -535,7 +459,7 @@ export const useMpesa = (configs: MpesaConfig) => {
      *
      * @return Promise<any>
      */
-    async function processResults(ok: boolean) {
+    function processResults(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
@@ -554,7 +478,7 @@ export const useMpesa = (configs: MpesaConfig) => {
      *
      * @return Promise<any>
      */
-    async function processTimeout(ok: boolean) {
+    function processTimeout(ok: boolean) {
         return ok
             ? {
                 "ResultCode": 0,
