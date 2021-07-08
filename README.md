@@ -32,7 +32,7 @@ yarn add @osenco/mpesa
         </tr>
         <tr>
             <td>type</td>
-            <td>Identifier type 2 for Till, 2 for Paybill</td>
+            <td>Identifier type 1 for Till, 2 for Paybill</td>
             <td>number</td>
         </tr>
         <tr>
