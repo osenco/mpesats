@@ -64,7 +64,7 @@ class Service {
         });
         this.http.defaults.headers.common = {
             Accept: "application/json",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         };
     }
     /**
@@ -72,20 +72,27 @@ class Service {
      *
      * @return string Access token
      */
-    async authenticate() {
-        try {
-            const { data } = await this.get("oauth/v1/generate?grant_type=client_credentials");
-            return data === null || data === void 0 ? void 0 : data.access_token;
+    authenticate(token = null) {
+        if (!this.token && token) {
+            this.token = token;
         }
-        catch (error) {
-            return error;
+        else {
+            try {
+                this.get("oauth/v1/generate?grant_type=client_credentials").then(({ data }) => {
+                    this.token = data === null || data === void 0 ? void 0 : data.access_token;
+                });
+            }
+            catch (error) {
+                return error;
+            }
         }
+        return this;
     }
     async generateSecurityCredential() {
         return crypto
             .publicEncrypt({
             key: fs.readFileSync(path.join(__dirname, "certs", this.config.env, "cert.cer"), "utf8"),
-            padding: constants.RSA_PKCS1_PADDING
+            padding: constants.RSA_PKCS1_PADDING,
         }, Buffer.from(this.config.password))
             .toString("base64");
     }
@@ -97,11 +104,12 @@ class Service {
      * @return string/bool
      */
     async get(endpoint) {
-        const auth = "Basic " + Buffer.from(this.config.key + ":" + this.config.secret).toString("base64");
+        const auth = "Basic " +
+            Buffer.from(`${this.config.key}:${this.config.secret}`).toString("base64");
         return await this.http.get(endpoint, {
             headers: {
-                "Authorization": auth
-            }
+                Authorization: auth,
+            },
         });
     }
     /**
@@ -112,10 +120,11 @@ class Service {
      * @return string/bool
      */
     async post(endpoint, payload) {
-        return this.http.post(endpoint, payload, {
+        return this.http
+            .post(endpoint, payload, {
             headers: {
-                "Authorization": "Bearer " + await this.authenticate()
-            }
+                Authorization: "Bearer " + this.token,
+            },
         })
             .then(({ data }) => data)
             .catch((e) => {

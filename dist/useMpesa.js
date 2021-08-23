@@ -7,11 +7,11 @@ exports.useMpesa = void 0;
 const axios_1 = __importDefault(require("axios"));
 const date_fns_1 = require("date-fns");
 const service_1 = require("./service");
-const useMpesa = (configs) => {
+const useMpesa = (configs, token = null) => {
     const ref = Math.random().toString(16).substr(2, 8).toUpperCase();
     /**
      * Setup global configuration for classes
-     * @var Array configs Formatted configuration options
+     * @var MpesaConfig configs Formatted configuration options
      *
      * @return void
      */
@@ -36,6 +36,12 @@ const useMpesa = (configs) => {
     }
     const config = Object.assign(Object.assign({}, defaults), configs);
     const service = new service_1.Service(config);
+    if (token) {
+        service.token = token;
+    }
+    else {
+        service.authenticate();
+    }
     const http = axios_1.default.create({
         baseURL: config.env == "live"
             ? "https://api.safaricom.co.ke"
@@ -44,7 +50,7 @@ const useMpesa = (configs) => {
     });
     http.defaults.headers.common = {
         Accept: "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     };
     /**
      * @var Integer phone The MSISDN sending the funds.
@@ -53,7 +59,7 @@ const useMpesa = (configs) => {
      * @var String description A description of the transaction.
      * @var String remark Remarks
      *
-     * @return Promise<any> Response
+     * @return Promise<MpesaResponse> Response
      */
     async function stkPush(phone, amount, reference = ref, description = "Transaction Description", remark = "Remark") {
         phone = String(phone);
@@ -64,7 +70,9 @@ const useMpesa = (configs) => {
             BusinessShortCode: config.store,
             Password: password,
             Timestamp: timestamp,
-            TransactionType: (Number(config.type) == 4) ? "CustomerPayBillOnline" : "CustomerBuyGoodsOnline",
+            TransactionType: Number(config.type) == 4
+                ? "CustomerPayBillOnline"
+                : "CustomerBuyGoodsOnline",
             Amount: Number(amount),
             PartyA: phone,
             PartyB: config.shortcode,
@@ -84,10 +92,10 @@ const useMpesa = (configs) => {
     }
     async function registerUrls(response_type = "Completed") {
         const response = await service.post("mpesa/c2b/v1/registerurl", {
-            "ShortCode": config.store,
-            "ResponseType": response_type,
-            "ConfirmationURL": config.confirmationUrl,
-            "ValidationURL": config.validationUrl,
+            ShortCode: config.store,
+            ResponseType: response_type,
+            ConfirmationURL: config.confirmationUrl,
+            ValidationURL: config.validationUrl,
         });
         if (response.errorCode) {
             return { data: null, error: response };
@@ -148,17 +156,18 @@ const useMpesa = (configs) => {
             Remarks: remarks,
             QueueTimeOutURL: config.timeoutUrl,
             ResultURL: config.resultUrl,
-            Occasion: occassion
+            Occasion: occassion,
         });
         if (response.OriginatorConversationID) {
             return { data: response, error: null };
         }
         if (response.ResultCode && response.ResultCode !== 0) {
             return {
-                data: null, error: {
+                data: null,
+                error: {
                     errorCode: response.ResultCode,
-                    errorMessage: response.ResultDesc
-                }
+                    errorMessage: response.ResultDesc,
+                },
             };
         }
         if (response.errorCode) {
@@ -167,16 +176,16 @@ const useMpesa = (configs) => {
         return response;
     }
     /**
-  * Transfer funds between two paybills
-  * @var receiver Receiving party paybill
-  * @var receiver_type Receiver party type
-  * @var amount Amount to transfer
-  * @var command Command ID
-  * @var reference Account Reference mandatory for “BusinessPaybill” CommandID.
-  * @var remarks
-  *
-  * @return Promise<any>
-  */
+     * Transfer funds between two paybills
+     * @var receiver Receiving party paybill
+     * @var receiver_type Receiver party type
+     * @var amount Amount to transfer
+     * @var command Command ID
+     * @var reference Account Reference mandatory for “BusinessPaybill” CommandID.
+     * @var remarks
+     *
+     * @return Promise<any>
+     */
     async function sendB2B(receiver, receiver_type, amount, command = "BusinessBuyGoods", reference = "TRX", remarks = "") {
         const response = await service.post("mpesa/b2b/v1/paymentrequest", {
             Initiator: config.username,
@@ -255,7 +264,7 @@ const useMpesa = (configs) => {
             ResultURL: config.resultUrl,
             QueueTimeOutURL: config.timeoutUrl,
             Remarks: remarks,
-            Occasion: occasion
+            Occasion: occasion,
         });
         if (response.MerchantRequestID) {
             return { data: response, error: null };
@@ -303,12 +312,12 @@ const useMpesa = (configs) => {
     function validateTransaction(ok) {
         return ok
             ? {
-                "ResultCode": 0,
-                "ResultDesc": "Success",
+                ResultCode: 0,
+                ResultDesc: "Success",
             }
             : {
-                "ResultCode": 1,
-                "ResultDesc": "Failed",
+                ResultCode: 1,
+                ResultDesc: "Failed",
             };
     }
     /**
@@ -321,12 +330,12 @@ const useMpesa = (configs) => {
     function confirmTransaction(ok) {
         return ok
             ? {
-                "ResultCode": 0,
-                "ResultDesc": "Success",
+                ResultCode: 0,
+                ResultDesc: "Success",
             }
             : {
-                "ResultCode": 1,
-                "ResultDesc": "Failed",
+                ResultCode: 1,
+                ResultDesc: "Failed",
             };
     }
     /**
@@ -339,12 +348,12 @@ const useMpesa = (configs) => {
     function reconcileTransaction(ok) {
         return ok
             ? {
-                "ResultCode": 0,
-                "ResultDesc": "Service request successful",
+                ResultCode: 0,
+                ResultDesc: "Service request successful",
             }
             : {
-                "ResultCode": 1,
-                "ResultDesc": "Service request failed",
+                ResultCode: 1,
+                ResultDesc: "Service request failed",
             };
     }
     /**
@@ -357,12 +366,12 @@ const useMpesa = (configs) => {
     function processResults(ok) {
         return ok
             ? {
-                "ResultCode": 0,
-                "ResultDesc": "Service request successful",
+                ResultCode: 0,
+                ResultDesc: "Service request successful",
             }
             : {
-                "ResultCode": 1,
-                "ResultDesc": "Service request failed",
+                ResultCode: 1,
+                ResultDesc: "Service request failed",
             };
     }
     /**
@@ -375,12 +384,12 @@ const useMpesa = (configs) => {
     function processTimeout(ok) {
         return ok
             ? {
-                "ResultCode": 0,
-                "ResultDesc": "Service request successful",
+                ResultCode: 0,
+                ResultDesc: "Service request successful",
             }
             : {
-                "ResultCode": 1,
-                "ResultDesc": "Service request failed",
+                ResultCode: 1,
+                ResultDesc: "Service request failed",
             };
     }
     return {
@@ -396,7 +405,7 @@ const useMpesa = (configs) => {
         confirmTransaction,
         reconcileTransaction,
         processResults,
-        processTimeout
+        processTimeout,
     };
 };
 exports.useMpesa = useMpesa;

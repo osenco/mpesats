@@ -1,5 +1,5 @@
 import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
-export declare const useMpesa: (configs: MpesaConfig) => {
+export declare const useMpesa: (configs: MpesaConfig, token?: string | null) => {
     stkPush: (phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string) => Promise<MpesaResponse>;
     registerUrls: (response_type?: ResponseType) => Promise<MpesaResponse>;
     simulateC2B: (phone: string | number, amount?: number, reference?: string | number, command?: string) => Promise<{

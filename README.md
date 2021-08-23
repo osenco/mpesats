@@ -108,6 +108,10 @@ yarn add @osenco/mpesa
 ``` javascript
 import { Mpesa, useMpesa } from "@osenco/mpesa"
 ```
+or 
+```javascript
+const { Mpesa, useMpesa } = require("@osenco/mpesa")
+```
 
 ### Instantiation
 ``` javascript

@@ -1,13 +1,13 @@
 import axios, { AxiosInstance } from "axios";
-import { MpesaConfig } from "./types"
+import { MpesaConfig } from "./types";
 import * as constants from "constants";
 import * as crypto from "crypto";
 import * as fs from "fs";
 import * as path from "path";
 
 export class Service {
-
-    private http: AxiosInstance
+    private http: AxiosInstance;
+    public token: string | null;
 
     /**
      * @var object config Configuration options
@@ -38,15 +38,16 @@ export class Service {
         this.config = configs;
 
         this.http = axios.create({
-            baseURL: this.config.env == "live"
-                ? "https://api.safaricom.co.ke"
-                : "https://sandbox.safaricom.co.ke",
+            baseURL:
+                this.config.env == "live"
+                    ? "https://api.safaricom.co.ke"
+                    : "https://sandbox.safaricom.co.ke",
             withCredentials: true,
         });
 
         this.http.defaults.headers.common = {
             Accept: "application/json",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         };
     }
 
@@ -56,14 +57,23 @@ export class Service {
      * @return string Access token
      */
 
-    private async authenticate() {
-        try {
-            const { data } = await this.get("oauth/v1/generate?grant_type=client_credentials")
+    public authenticate(token: string | null = null) {
+        if (!this.token && token) {
+            this.token = token;
+        } else {
+            try {
+                this.get(
+                    "oauth/v1/generate?grant_type=client_credentials"
+                ).then(({ data }) => {
 
-            return data?.access_token;
-        } catch (error) {
-            return error
+                    this.token = data?.access_token;
+                })
+            } catch (error) {
+                return error;
+            }
         }
+
+        return this
     }
 
     public async generateSecurityCredential() {
@@ -79,13 +89,12 @@ export class Service {
                         ),
                         "utf8"
                     ),
-                    padding: constants.RSA_PKCS1_PADDING
+                    padding: constants.RSA_PKCS1_PADDING,
                 },
 
                 Buffer.from(this.config.password)
             )
             .toString("base64");
-
     }
 
     /**
@@ -96,18 +105,17 @@ export class Service {
      * @return string/bool
      */
     public async get(endpoint: string) {
-        const auth = "Basic " + Buffer.from(
-            this.config.key + ":" + this.config.secret
-        ).toString("base64")
+        const auth =
+            "Basic " +
+            Buffer.from(`${this.config.key}:${this.config.secret}`).toString(
+                "base64"
+            );
 
-        return await this.http.get(
-            endpoint,
-            {
-                headers: {
-                    "Authorization": auth
-                }
+        return await this.http.get(endpoint, {
+            headers: {
+                Authorization: auth,
             },
-        )
+        });
     }
 
     /**
@@ -118,22 +126,19 @@ export class Service {
      * @return string/bool
      */
     public async post(endpoint: string, payload: any) {
-        return this.http.post(
-            endpoint,
-            payload,
-            {
+        return this.http
+            .post(endpoint, payload, {
                 headers: {
-                    "Authorization": "Bearer " + await this.authenticate()
-                }
-            },
-        )
+                    Authorization: "Bearer " + this.token,
+                },
+            })
             .then(({ data }) => data)
             .catch((e: any) => {
                 if (e.response.data) {
-                    return e.response.data
+                    return e.response.data;
                 } else {
-                    return { errorCode: 500, errorMessage: e.message }
+                    return { errorCode: 500, errorMessage: e.message };
                 }
-            })
+            });
     }
 }

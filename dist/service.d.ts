@@ -1,6 +1,7 @@
 import { MpesaConfig } from "./types";
 export declare class Service {
     private http;
+    token: string | null;
     /**
      * @var object config Configuration options
      */
@@ -17,7 +18,7 @@ export declare class Service {
      *
      * @return string Access token
      */
-    private authenticate;
+    authenticate(token?: string | null): any;
     generateSecurityCredential(): Promise<string>;
     /**
      * Perform a GET request to the M-PESA Daraja API
