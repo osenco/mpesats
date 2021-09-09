@@ -39,7 +39,7 @@ export class Service {
 
         this.http = axios.create({
             baseURL:
-                this.config.env == "live"
+                this.config.env === "live"
                     ? "https://api.safaricom.co.ke"
                     : "https://sandbox.safaricom.co.ke",
             withCredentials: true,

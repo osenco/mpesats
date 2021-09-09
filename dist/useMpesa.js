@@ -64,7 +64,7 @@ const useMpesa = (configs, token = null) => {
     async function stkPush(phone, amount, reference = ref, description = "Transaction Description", remark = "Remark") {
         phone = String(phone);
         phone = "254" + phone.substr(phone.length - 9, phone.length);
-        const timestamp = date_fns_1.format(new Date(), "yyyyMMddHHmmss");
+        const timestamp = (0, date_fns_1.format)(new Date(), "yyyyMMddHHmmss");
         const password = Buffer.from(config.shortcode + config.passkey + timestamp).toString("base64");
         const response = await service.post("mpesa/stkpush/v1/processrequest", {
             BusinessShortCode: config.store,
