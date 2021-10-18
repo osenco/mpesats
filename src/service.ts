@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from "axios";
+import axios, { AxiosInstance, AxiosResponse } from "axios";
 import { MpesaConfig } from "./types";
 import * as constants from "constants";
 import * as crypto from "crypto";
@@ -64,7 +64,7 @@ export class Service {
             try {
                 this.get(
                     "oauth/v1/generate?grant_type=client_credentials"
-                ).then(({ data }) => {
+                ).then(({ data }: AxiosResponse<any>) => {
 
                     this.token = data?.access_token;
                 })
@@ -125,7 +125,7 @@ export class Service {
      *
      * @return string/bool
      */
-    public async post(endpoint: string, payload: any) {
+    public async post(endpoint: string, payload: any): Promise<any> {
         return this.http
             .post(endpoint, payload, {
                 headers: {

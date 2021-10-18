@@ -75,7 +75,7 @@ export class Mpesa {
 	 * @var String description A description of the transaction.
 	 * @var String remark Remarks
 	 *
-	 * @return Promise<any> Response
+	 * @return Promise<MpesaResponse> Response
 	 */
 	public async stkPush(
 		phone: string | number,

@@ -1,17 +1,17 @@
 import axios, { AxiosInstance } from "axios";
-import * as constants from "constants";
+import { format } from "date-fns";
+import { Service } from "./service";
 import {
 	MpesaResponse,
+	MpesaSTKResponse,
 	B2BCommands,
 	B2CCommands,
 	MpesaConfig,
 	ResponseType,
 } from "./types";
-import { format } from "date-fns";
-import { Service } from "./service";
 
 export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
-    const ref = Math.random().toString(16).substr(2, 8).toUpperCase();
+	const ref = Math.random().toString(16).substr(2, 8).toUpperCase();
 
 	/**
 	 * Setup global configuration for classes
@@ -45,11 +45,11 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 
 	const service = new Service(config);
 
-    if (token) {
-        service.token = token;
-    } else {
-        service.authenticate();
-    }
+	if (token) {
+		service.token = token;
+	} else {
+		service.authenticate();
+	}
 
 	const http: AxiosInstance = axios.create({
 		baseURL:
@@ -290,7 +290,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		remarks = "Transaction Status Query",
 		occasion = "Transaction Status Query"
 	): Promise<MpesaResponse> {
-		const response = await service.post(
+		const response: MpesaSTKResponse = await service.post(
 			"mpesa/transactionstatus/v1/query",
 			{
 				Initiator: config.username,
@@ -313,8 +313,8 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		if (response.errorCode) {
 			return { data: null, error: response };
 		}
-
-		return response;
+		
+		return { data: response, error: null };
 	}
 
 	/**
@@ -423,7 +423,15 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	 *
 	 * @return Promise<any>
 	 */
-	function confirmTransaction(ok: boolean) {
+	function confirmTransaction(
+		ok: boolean,
+		data: any,
+		callback: CallableFunction
+	) {
+		if (callback) {
+			ok = callback(data);
+		}
+
 		return ok
 			? {
 					ResultCode: 0,

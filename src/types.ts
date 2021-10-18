@@ -16,13 +16,26 @@ export type MpesaConfig = {
 };
 
 export type MpesaResponse = { data: any; error: any };
+
+export type MpesaSTKResponse = {
+	MerchantRequestID: string|null,
+	CheckoutRequestID: string|null,
+	ResponseCode: number|null,
+	ResponseDescription: string|null,
+	CustomerMessage: string|null,
+	errorCode: number|null,
+	errorMessage: string|null,
+}
+
 export type ResponseType = "Completed" | "Cancelled";
+
 export type B2BCommands =
 	| "BusinessPayBill"
 	| "BusinessBuyGoods"
 	| "DisburseFundsToBusiness"
 	| "BusinessToBusinessTransfer"
 	| "MerchantToMerchantTransfer";
+
 export type B2CCommands =
 	| "BusinessPayment"
 	| "SalaryPayment"
