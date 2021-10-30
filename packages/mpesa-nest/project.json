@@ -1,0 +1,23 @@
+{
+  "root": "packages/mpesa-nest",
+  "sourceRoot": "packages/mpesa-nest/src",
+  "projectType": "library",
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/mpesa-nest/**/*.ts"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/mpesa-nest"],
+      "options": {
+        "jestConfig": "packages/mpesa-nest/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  },
+  "tags": []
+}
