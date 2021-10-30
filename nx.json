@@ -1,0 +1,40 @@
+{
+    "npmScope": "osenco",
+    "implicitDependencies": {
+        "package.json": {
+            "dependecies": "*",
+            "devDependencies": "*"
+        },
+        ".github/workflow/ci.yml": "*"
+    },
+    "affected": {
+        "defaultBase": "packages"
+    },
+    "tasksRunnerOptions": {
+        "default": {
+            "runner": "@nwrl/nx-cloud",
+            "options": {
+                "cacheableOperations": [
+                    "build",
+                    "test",
+                    "package",
+                    "prepare"
+                ],
+                "accessToken": "",
+                "canTrackAnalytics": false,
+                "showUsageWarnings": true,
+                "runtimeCacheInputs": [
+                    "node -v"
+                ]
+            }
+        }
+    },
+    "targetDependencies": {
+        "build": [
+            {
+                "target": "build",
+                "projects": "dependencies"
+            }
+        ]
+    }
+}

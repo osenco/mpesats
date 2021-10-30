@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "projects": {
+    "@osenco/mpesa": "packages/mpesa",
+    "@osenco/mpesa-nestjs": "packages/mpesa-nestjs",
+    "@osenco/mpesa-lb": "packages/mpesa-lb",
+    "@osenco/mpesa-adonis": "packages/mpesa-adonis"
+  }
+}
