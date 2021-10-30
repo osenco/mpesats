@@ -43,6 +43,8 @@ async function* fetchUsers(page = 1): AsyncIterableIterator<Contributor[]> {
       method: "GET",
     });
 
+    console.log({ response });
+
     const contributors = (await response.json()) as
       | Contributor[]
       | { message: string };

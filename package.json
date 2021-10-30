@@ -13,6 +13,14 @@
   "engines": {
     "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
   },
+  "scripts": {
+    "generate-contributors": "yarn ts-node --transpile-only ./tools/generate-contributors.ts && yarn all-contributors generate",
+    "pre-commit": "yarn lint-stagged",
+    "pre-push": "yarn check-format",
+    "postinstall": "yarn husky install",
+    "lint": "eslint .js, .ts",
+    "typecheck": "nx run-many --target=typecheck --all --parallel"
+  },
   "devDependencies": {
     "@commitlint/cli": "^13.2.1",
     "@commitlint/config-conventional": "^13.2.0",
