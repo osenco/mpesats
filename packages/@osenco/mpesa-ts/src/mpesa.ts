@@ -12,7 +12,7 @@ export class Mpesa {
   private service: Service;
 
   /**
-   * @var object config Configuration options
+   * @var {MpesaConfig} config config Configuration options
    */
   public config: MpesaConfig = {
     env: "sandbox",

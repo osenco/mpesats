@@ -1,0 +1,18 @@
+{
+  "npmClient": "yarn",
+  "useWorkspaces": "true",
+  "version": "0.1.1-beta.1",
+  "packages": ["packages/@osenco/*"],
+  "changelog": {
+    "repo": "osenco/mpesats",
+    "labels": {
+      "PR: New Feature": ":rocket: New Features",
+      "PR: Breaking Change": ":boom: Breaking Change",
+      "PR: Bug Fix": ":bug: Bug Fix",
+      "PR: Documentation": ":memo: Documentation",
+      "PR: Internal": ":house: Internal",
+      "PR: Underlying Tools": ":hammer: Underlying Tools"
+    },
+    "cacheDir": ".changelog"
+  }
+}

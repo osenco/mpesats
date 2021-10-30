@@ -1,25 +1,12 @@
 {
-  "name": "@osenco/mpesa",
-  "version": "0.1.0",
-  "description": "M-Pesa API typescript SDK",
-  "main": "dist/index.js",
+  "private": "true",
+  "workspaces": [
+    "packages/@osenco/*",
+    "core",
+    "nestjs"
+  ],
   "scripts": {
-    "build": "tsc",
-    "deploy": "npm publish --access public"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/osenco/mpesats.git"
-  },
-  "homepage": "https://github.com/osenco/mpesats",
-  "author": "Osen Concepts <hi@osen.co.ke>",
-  "license": "MIT",
-  "dependencies": {
-    "axios": "^0.23.0",
-    "date-fns": "^2.25.0"
-  },
-  "devDependencies": {
-    "@types/node": "^16.11.1",
-    "typescript": "^4.4.4"
+    "test": "node --experimental-vm-modules scripts/test.js"
   }
+  
 }
