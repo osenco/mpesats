@@ -8,7 +8,10 @@
         ".github/workflow/ci.yml": "*"
     },
     "affected": {
-        "defaultBase": "packages"
+        "defaultBase": "master"
+    },
+    "workspaceLayout": {
+        "libsDir": "packages"
     },
     "tasksRunnerOptions": {
         "default": {
