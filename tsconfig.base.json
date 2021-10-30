@@ -18,7 +18,8 @@
     "lib": ["es2017"],
     "paths": {
       "@osenco/mpesa": ["packages/mpesa/src/index.ts"],
-      "@osenco/mpesa-nest": ["packages/mpesa-nest/src/index.ts"]
+      "@osenco/mpesa-nest": ["packages/mpesa-nest/src/index.ts"],
+      "@osenco/mpesa-react": ["packages/mpesa-react/src/index.ts"]
     }
   }
 }

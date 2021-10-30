@@ -1,0 +1,23 @@
+{
+  "root": "packages/mpesa-react",
+  "sourceRoot": "packages/mpesa-react/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/mpesa-react/**/*.{ts,tsx,js,jsx}"]
+      }
+    },
+    "test": {
+      "executor": "@nrwl/jest:jest",
+      "outputs": ["coverage/packages/mpesa-react"],
+      "options": {
+        "jestConfig": "packages/mpesa-react/jest.config.js",
+        "passWithNoTests": true
+      }
+    }
+  }
+}

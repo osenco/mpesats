@@ -2,6 +2,7 @@
   "version": 2,
   "projects": {
     "mpesa": "packages/mpesa",
-    "mpesa-nest": "packages/mpesa-nest"
+    "mpesa-nest": "packages/mpesa-nest",
+    "mpesa-react": "packages/mpesa-react"
   }
 }

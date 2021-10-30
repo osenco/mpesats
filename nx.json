@@ -1,43 +1,46 @@
 {
-    "npmScope": "osenco",
-    "implicitDependencies": {
-        "package.json": {
-            "dependecies": "*",
-            "devDependencies": "*"
-        },
-        ".github/workflow/ci.yml": "*"
+  "npmScope": "osenco",
+  "implicitDependencies": {
+    "package.json": {
+      "dependecies": "*",
+      "devDependencies": "*"
     },
-    "affected": {
-        "defaultBase": "master"
-    },
-    "workspaceLayout": {
-        "libsDir": "packages"
-    },
-    "tasksRunnerOptions": {
-        "default": {
-            "runner": "@nwrl/nx-cloud",
-            "options": {
-                "cacheableOperations": [
-                    "build",
-                    "test",
-                    "package",
-                    "prepare"
-                ],
-                "accessToken": "",
-                "canTrackAnalytics": false,
-                "showUsageWarnings": true,
-                "runtimeCacheInputs": [
-                    "node -v"
-                ]
-            }
-        }
-    },
-    "targetDependencies": {
-        "build": [
-            {
-                "target": "build",
-                "projects": "dependencies"
-            }
-        ]
+    ".github/workflow/ci.yml": "*"
+  },
+  "affected": {
+    "defaultBase": "master"
+  },
+  "workspaceLayout": {
+    "libsDir": "packages"
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nwrl/nx-cloud",
+      "options": {
+        "cacheableOperations": ["build", "test", "package", "prepare"],
+        "accessToken": "",
+        "canTrackAnalytics": false,
+        "showUsageWarnings": true,
+        "runtimeCacheInputs": ["node -v"]
+      }
     }
+  },
+  "targetDependencies": {
+    "build": [
+      {
+        "target": "build",
+        "projects": "dependencies"
+      }
+    ]
+  },
+  "generators": {
+    "@nrwl/react": {
+      "application": {
+        "babel": true
+      }
+    }
+  },
+  "cli": {
+    "defaultCollection": "@nrwl/react"
+  }
 }

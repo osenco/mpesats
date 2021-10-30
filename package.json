@@ -9,11 +9,37 @@
     "Odhiambo Dormnic<ayimdomnic@gmail.com>"
   ],
   "license": "MIT",
-  "repository": "osenco/mpesa-ts",
+  "repository": "osenco/mpesats",
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional",
+      "@commitlint/config-lerna-scopes"
+    ],
+    "rules": {
+      "body-max-length": [
+        0
+      ],
+      "body-max-line-length": [
+        0
+      ],
+      "footer-max-length": [
+        0
+      ],
+      "footer-max-line-length": [
+        0
+      ],
+      "header-max-length": [
+        0
+      ]
+    }
+  },
   "engines": {
     "node": "^12.22.0 || ^14.17.0 || >=16.0.0"
   },
   "scripts": {
+    "clean": "lerna clean && lerna run clean",
+    "cz": "git-cz",
+    "format": "prettier --write \"./**/*.{ts,js,json,md}\"",
     "generate-contributors": "yarn ts-node --transpile-only ./tools/generate-contributors.ts && yarn all-contributors generate",
     "pre-commit": "yarn lint-stagged",
     "pre-push": "yarn check-format",
@@ -37,17 +63,27 @@
     "@nrwl/nx-cloud": "^12.5.1",
     "@nrwl/react": "^13.1.2",
     "@nrwl/tao": "^13.1.2",
+    "@nrwl/web": "13.1.2",
     "@nrwl/workspace": "^13.1.2",
+    "@testing-library/react": "12.1.2",
+    "@testing-library/react-hooks": "7.0.2",
     "@types/jest": "27.0.2",
     "@types/node": "^16.11.6",
     "@types/prettier": "^2.4.1",
+    "@types/react": "17.0.30",
+    "@types/react-dom": "17.0.9",
     "@typescript-eslint/eslint-plugin": "~4.33.0",
     "@typescript-eslint/parser": "~4.33.0",
     "all-contributors-cli": "^6.20.0",
+    "babel-jest": "27.2.3",
     "cspell": "^5.12.3",
     "cz-conventional-changelog": "^3.3.0",
     "eslint": "^8.1.0",
     "eslint-config-prettier": "8.1.0",
+    "eslint-plugin-import": "2.25.2",
+    "eslint-plugin-jsx-a11y": "6.4.1",
+    "eslint-plugin-react": "7.26.1",
+    "eslint-plugin-react-hooks": "4.2.0",
     "glob": "^7.2.0",
     "husky": "^7.0.4",
     "jest": "^27.3.1",
@@ -68,7 +104,11 @@
     "@nestjs/common": "^7.0.0",
     "@nestjs/core": "^7.0.0",
     "@nestjs/platform-express": "^7.0.0",
+    "core-js": "^3.6.5",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
     "reflect-metadata": "^0.1.13",
+    "regenerator-runtime": "0.13.7",
     "rxjs": "~6.6.3",
     "tslib": "^2.0.0"
   }
