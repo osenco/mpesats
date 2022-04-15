@@ -1,7 +1,11 @@
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -31,13 +35,13 @@ const path = __importStar(require("path"));
 class Service {
     /**
      * Setup global configuration for classes
-     * @var Array configs Formatted configuration options
+     * @param Array configs Formatted configuration options
      *
      * @return void
      */
     constructor(configs) {
         /**
-         * @var object config Configuration options
+         * @param object config Configuration options
          */
         this.config = {
             env: "sandbox",
@@ -54,10 +58,11 @@ class Service {
             callbackUrl: "/lipwa/reconcile",
             timeoutUrl: "/lipwa/timeout",
             resultUrl: "/lipwa/results",
+            billingUrl: "/lipwa/billing",
         };
         this.config = configs;
         this.http = axios_1.default.create({
-            baseURL: this.config.env == "live"
+            baseURL: this.config.env === "live"
                 ? "https://api.safaricom.co.ke"
                 : "https://sandbox.safaricom.co.ke",
             withCredentials: true,
@@ -98,8 +103,8 @@ class Service {
     }
     /**
      * Perform a GET request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var String credentials Formated Auth credentials
+     * @param endpoint Daraja API URL Endpoint
+     * @param credentials Formated Auth credentials
      *
      * @return string/bool
      */
@@ -114,8 +119,8 @@ class Service {
     }
     /**
      * Perform a POST request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var Array data Formated array of data to send
+     * @param endpoint Daraja API URL Endpoint
+     * @param Array data Formated array of data to send
      *
      * @return string/bool
      */

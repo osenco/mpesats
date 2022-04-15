@@ -10,7 +10,7 @@ export class Service {
     public token: string | null;
 
     /**
-     * @var object config Configuration options
+     * @param object config Configuration options
      */
     public config: MpesaConfig = {
         env: "sandbox",
@@ -27,10 +27,11 @@ export class Service {
         callbackUrl: "/lipwa/reconcile",
         timeoutUrl: "/lipwa/timeout",
         resultUrl: "/lipwa/results",
+        billingUrl: "/lipwa/billing",
     };
     /**
      * Setup global configuration for classes
-     * @var Array configs Formatted configuration options
+     * @param Array configs Formatted configuration options
      *
      * @return void
      */
@@ -99,8 +100,8 @@ export class Service {
 
     /**
      * Perform a GET request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var String credentials Formated Auth credentials
+     * @param endpoint Daraja API URL Endpoint
+     * @param credentials Formated Auth credentials
      *
      * @return string/bool
      */
@@ -120,8 +121,8 @@ export class Service {
 
     /**
      * Perform a POST request to the M-PESA Daraja API
-     * @var String endpoint Daraja API URL Endpoint
-     * @var Array data Formated array of data to send
+     * @param endpoint Daraja API URL Endpoint
+     * @param Array data Formated array of data to send
      *
      * @return string/bool
      */

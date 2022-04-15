@@ -6,12 +6,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.useMpesa = void 0;
 const axios_1 = __importDefault(require("axios"));
 const date_fns_1 = require("date-fns");
+const billing_1 = require("./billing");
 const service_1 = require("./service");
 const useMpesa = (configs, token = null) => {
-    const ref = Math.random().toString(16).substr(2, 8).toUpperCase();
+    const ref = Math.random().toString(16).slice(2, 8).toUpperCase();
     /**
      * Setup global configuration for classes
-     * @var MpesaConfig configs Formatted configuration options
+     * @param MpesaConfig configs Formatted configuration options
      *
      * @return void
      */
@@ -30,6 +31,7 @@ const useMpesa = (configs, token = null) => {
         callbackUrl: "/lipwa/reconcile",
         timeoutUrl: "/lipwa/timeout",
         resultUrl: "/lipwa/results",
+        billingUrl: "/lipwa/billing",
     };
     if (!configs || !configs.store || configs.type == 4) {
         configs.store = configs.shortcode;
@@ -52,18 +54,21 @@ const useMpesa = (configs, token = null) => {
         Accept: "application/json",
         "Content-Type": "application/json",
     };
+    function billManager() {
+        return new billing_1.BillManager(configs);
+    }
     /**
-     * @var Integer phone The MSISDN sending the funds.
-     * @var Integer amount The amount to be transacted.
-     * @var String reference Used with M-Pesa PayBills.
-     * @var String description A description of the transaction.
-     * @var String remark Remarks
+     * @param phone The MSISDN sending the funds.
+     * @param amount The amount to be transacted.
+     * @param reference Used with M-Pesa PayBills.
+     * @param description A description of the transaction.
+     * @param remark Remarks
      *
      * @return Promise<MpesaResponse> Response
      */
     async function stkPush(phone, amount, reference = ref, description = "Transaction Description", remark = "Remark") {
-        phone = String(phone);
-        phone = "254" + phone.substr(phone.length - 9, phone.length);
+        phone = (phone);
+        phone = "254" + +String(phone).slice(-9);
         const timestamp = (0, date_fns_1.format)(new Date(), "yyyyMMddHHmmss");
         const password = Buffer.from(config.shortcode + config.passkey + timestamp).toString("base64");
         const response = await service.post("mpesa/stkpush/v1/processrequest", {
@@ -108,17 +113,17 @@ const useMpesa = (configs, token = null) => {
     /**
      * Simulates a C2B request
      *
-     * @var Integer phone Receiving party phone
-     * @var Integer amount Amount to transfer
-     * @var String command Command ID
-     * @var String reference
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param phone Receiving party phone
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param reference
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
     async function simulateC2B(phone, amount = 10, reference = "TRX", command = "") {
-        phone = String(phone);
-        phone = "254" + phone.substr(phone.length - 9, phone.length);
+        phone = (phone);
+        phone = "254" + +String(phone).slice(-9);
         const response = await service.post("mpesa/c2b/v1/simulate", {
             ShortCode: config.shortcode,
             CommandID: command,
@@ -135,17 +140,17 @@ const useMpesa = (configs, token = null) => {
     }
     /**
      * Transfer funds between two paybills
-     * @var receiver Receiving party phone
-     * @var amount Amount to transfer
-     * @var command Command ID
-     * @var occassion
-     * @var remarks
+     * @param receiver Receiving party phone
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param occassion
+     * @param remarks
      *
      * @return Promise<any>
      */
     async function sendB2C(phone, amount = 10, command = "BusinessPayment", remarks = "", occassion = "") {
-        phone = String(phone);
-        phone = "254" + phone.substr(phone.length - 9, phone.length);
+        phone = (phone);
+        phone = "254" + +String(phone).slice(-9);
         const response = await service.post("mpesa/b2c/v1/paymentrequest", {
             InitiatorName: config.username,
             SecurityCredential: await service.generateSecurityCredential(),
@@ -177,12 +182,12 @@ const useMpesa = (configs, token = null) => {
     }
     /**
      * Transfer funds between two paybills
-     * @var receiver Receiving party paybill
-     * @var receiver_type Receiver party type
-     * @var amount Amount to transfer
-     * @var command Command ID
-     * @var reference Account Reference mandatory for “BusinessPaybill” CommandID.
-     * @var remarks
+     * @param receiver Receiving party paybill
+     * @param receiver_type Receiver party type
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
+     * @param remarks
      *
      * @return Promise<any>
      */
@@ -212,10 +217,10 @@ const useMpesa = (configs, token = null) => {
     /**
      * Get Status of a Transaction
      *
-     * @var String transaction
-     * @var String command
-     * @var String remarks
-     * @var String occassion
+     * @param transaction
+     * @param command
+     * @param remarks
+     * @param occassion
      *
      * @return Promise<any> Result
      */
@@ -238,17 +243,17 @@ const useMpesa = (configs, token = null) => {
         if (response.errorCode) {
             return { data: null, error: response };
         }
-        return response;
+        return { data: response, error: null };
     }
     /**
      * Reverse a Transaction
      *
-     * @var String transaction
-     * @var Integer amount
-     * @var Integer receiver
-     * @var String receiver_type
-     * @var String remarks
-     * @var String occassion
+     * @param transaction
+     * @param amount
+     * @param receiver
+     * @param receiver_type
+     * @param remarks
+     * @param occassion
      *
      * @return Promise<any> Result
      */
@@ -277,9 +282,9 @@ const useMpesa = (configs, token = null) => {
     /**
      * Check Account Balance
      *
-     * @var String command
-     * @var String remarks
-     * @var String occassion
+     * @param command
+     * @param remarks
+     * @param occassion
      *
      * @return Promise<any> Result
      */
@@ -305,7 +310,7 @@ const useMpesa = (configs, token = null) => {
     /**
      * Validate Transaction Data
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -323,11 +328,14 @@ const useMpesa = (configs, token = null) => {
     /**
      * Confirm Transaction Data
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
-    function confirmTransaction(ok) {
+    function confirmTransaction(ok, data, callback) {
+        if (callback) {
+            ok = callback(data);
+        }
         return ok
             ? {
                 ResultCode: 0,
@@ -341,7 +349,7 @@ const useMpesa = (configs, token = null) => {
     /**
      * Reconcile Transaction Using Instant Payment Notification from M-PESA
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -359,7 +367,7 @@ const useMpesa = (configs, token = null) => {
     /**
      * Process Results of an API Request
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -377,11 +385,11 @@ const useMpesa = (configs, token = null) => {
     /**
      * Process Transaction Timeout
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
-    function processTimeout(ok) {
+    function processTimeout(callback, ok) {
         return ok
             ? {
                 ResultCode: 0,
@@ -393,6 +401,7 @@ const useMpesa = (configs, token = null) => {
             };
     }
     return {
+        billManager,
         stkPush,
         registerUrls,
         simulateC2B,

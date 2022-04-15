@@ -1,37 +1,40 @@
+import { BillManager } from "./billing";
+import { Service } from "./service";
 import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
 export declare class Mpesa {
-    private service;
+    protected service: Service;
     /**
-     * @var object config Configuration options
+     * @param object config Configuration options
      */
     config: MpesaConfig;
     ref: string;
     /**
      * Setup global configuration for classes
-     * @var Array configs Formatted configuration options
+     * @param Array configs Formatted configuration options
      *
      * @return void
      */
     constructor(configs: MpesaConfig);
+    billing(): BillManager;
     /**
-     * @var Integer phone The MSISDN sending the funds.
-     * @var Integer amount The amount to be transacted.
-     * @var String reference Used with M-Pesa PayBills.
-     * @var String description A description of the transaction.
-     * @var String remark Remarks
+     * @param phone The MSISDN sending the funds.
+     * @param amount The amount to be transacted.
+     * @param reference Used with M-Pesa PayBills.
+     * @param description A description of the transaction.
+     * @param remark Remarks
      *
-     * @return Promise<any> Response
+     * @return Promise<MpesaResponse> Response
      */
     stkPush(phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string): Promise<MpesaResponse>;
     registerUrls(response_type?: ResponseType): Promise<MpesaResponse>;
     /**
      * Simulates a C2B request
      *
-     * @var Integer phone Receiving party phone
-     * @var Integer amount Amount to transfer
-     * @var String command Command ID
-     * @var String reference
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param phone Receiving party phone
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param reference
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -44,34 +47,46 @@ export declare class Mpesa {
     } | undefined>;
     /**
      * Transfer funds between two paybills
-     * @var receiver Receiving party phone
-     * @var amount Amount to transfer
-     * @var command Command ID
-     * @var occassion
-     * @var remarks
+     * @param receiver Receiving party phone
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param occassion
+     * @param remarks
      *
      * @return Promise<any>
      */
     sendB2C(phone: string | number, amount?: number, command?: B2CCommands, remarks?: string, occassion?: string): Promise<MpesaResponse>;
     /**
-  * Transfer funds between two paybills
-  * @var receiver Receiving party paybill
-  * @var receiver_type Receiver party type
-  * @var amount Amount to transfer
-  * @var command Command ID
-  * @var reference Account Reference mandatory for “BusinessPaybill” CommandID.
-  * @var remarks
-  *
-  * @return Promise<any>
-  */
+     * Transfer funds between two paybills
+     * @param receiver Receiving party paybill
+     * @param receiver_type Receiver party type
+     * @param amount Amount to transfer
+     * @param command Command ID
+     * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
+     * @param remarks
+     *
+     * @return Promise<any>
+     */
     sendB2B(receiver: string | number, receiver_type: string | number, amount: number, command?: B2BCommands, reference?: string | number, remarks?: string): Promise<MpesaResponse>;
+    /**
+     * Generate QR Code
+     * @param QRVersion Version number of the QR. e.g "01"
+     * @param QRFormat Format of QR output: ("1": Image Format. "2": QR Format. "3": Binary Data Format. "4": PDF Format.)
+     * @param QRType The type of QR being used : ("D": Dynamic QR Type)
+     * @param MerchantName Name of the Company/M-Pesa Merchant Name
+     * @param RefNo Transaction Reference
+     * @param Amount The total amount for the sale/transaction
+     * @param TrxCode Transaction Type: (BG: Pay Merchant (Buy Goods). WA: Withdraw Cash at Agent Till. PB: Paybill or Business number. SM: Send Money(Mobile number). SB: Sent to Business. Business number CPI in MSISDN format.
+     * @param CPI Credit Party Identifier. Can be a Mobile Number, Business Number, Agent Till, Paybill or Business number, Merchant Buy Goods.
+     */
+    generateQR(Amount: string, MerchantName: string, CPI: string, RefNo: string, TrxCode?: string, QRVersion?: string, QRFormat?: string, QRType?: string): Promise<MpesaResponse>;
     /**
      * Get Status of a Transaction
      *
-     * @var String transaction
-     * @var String command
-     * @var String remarks
-     * @var String occassion
+     * @param transaction
+     * @param command
+     * @param remarks
+     * @param occassion
      *
      * @return Promise<any> Result
      */
@@ -79,12 +94,12 @@ export declare class Mpesa {
     /**
      * Reverse a Transaction
      *
-     * @var String transaction
-     * @var Integer amount
-     * @var Integer receiver
-     * @var String receiver_type
-     * @var String remarks
-     * @var String occassion
+     * @param transaction
+     * @param amount
+     * @param receiver
+     * @param receiver_type
+     * @param remarks
+     * @param occassion
      *
      * @return Promise<any> Result
      */
@@ -92,9 +107,9 @@ export declare class Mpesa {
     /**
      * Check Account Balance
      *
-     * @var String command
-     * @var String remarks
-     * @var String occassion
+     * @param command
+     * @param remarks
+     * @param occassion
      *
      * @return Promise<any> Result
      */
@@ -102,7 +117,7 @@ export declare class Mpesa {
     /**
      * Validate Transaction Data
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -113,7 +128,7 @@ export declare class Mpesa {
     /**
      * Confirm Transaction Data
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -124,7 +139,7 @@ export declare class Mpesa {
     /**
      * Reconcile Transaction Using Instant Payment Notification from M-PESA
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -135,7 +150,7 @@ export declare class Mpesa {
     /**
      * Process Results of an API Request
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */
@@ -146,7 +161,7 @@ export declare class Mpesa {
     /**
      * Process Transaction Timeout
      *
-     * @var Callable callback Defined function or closure to process data and return true/false
+     * @param callback Defined function or closure to process data and return true/false
      *
      * @return Promise<any>
      */

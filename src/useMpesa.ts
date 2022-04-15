@@ -1,5 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { format } from "date-fns";
+import { BillManager } from "./billing";
 import { Service } from "./service";
 import {
 	MpesaResponse,
@@ -11,11 +12,11 @@ import {
 } from "./types";
 
 export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
-	const ref = Math.random().toString(16).substr(2, 8).toUpperCase();
+	const ref = Math.random().toString(16).slice(2, 8).toUpperCase();
 
 	/**
 	 * Setup global configuration for classes
-	 * @var MpesaConfig configs Formatted configuration options
+	 * @param MpesaConfig configs Formatted configuration options
 	 *
 	 * @return void
 	 */
@@ -35,6 +36,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		callbackUrl: "/lipwa/reconcile",
 		timeoutUrl: "/lipwa/timeout",
 		resultUrl: "/lipwa/results",
+        billingUrl: "/lipwa/billing",
 	};
 
 	if (!configs || !configs.store || configs.type == 4) {
@@ -64,12 +66,17 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		"Content-Type": "application/json",
 	};
 
+	function billManager(): BillManager
+	{
+		return new BillManager(configs);
+	}
+
 	/**
-	 * @var Integer phone The MSISDN sending the funds.
-	 * @var Integer amount The amount to be transacted.
-	 * @var String reference Used with M-Pesa PayBills.
-	 * @var String description A description of the transaction.
-	 * @var String remark Remarks
+	 * @param phone The MSISDN sending the funds.
+	 * @param amount The amount to be transacted.
+	 * @param reference Used with M-Pesa PayBills.
+	 * @param description A description of the transaction.
+	 * @param remark Remarks
 	 *
 	 * @return Promise<MpesaResponse> Response
 	 */
@@ -80,8 +87,8 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		description = "Transaction Description",
 		remark = "Remark"
 	): Promise<MpesaResponse> {
-		phone = String(phone);
-		phone = "254" + phone.substr(phone.length - 9, phone.length);
+		phone =(phone);
+		phone = "254" + +String(phone).slice(-9);
 
 		const timestamp = format(new Date(), "yyyyMMddHHmmss");
 		const password = Buffer.from(
@@ -141,11 +148,11 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Simulates a C2B request
 	 *
-	 * @var Integer phone Receiving party phone
-	 * @var Integer amount Amount to transfer
-	 * @var String command Command ID
-	 * @var String reference
-	 * @var Callable callback Defined function or closure to process data and return true/false
+	 * @param phone Receiving party phone
+	 * @param amount Amount to transfer
+	 * @param command Command ID
+	 * @param reference
+	 * @param callback Defined function or closure to process data and return true/false
 	 *
 	 * @return Promise<any>
 	 */
@@ -155,8 +162,8 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		reference: string | number = "TRX",
 		command = ""
 	) {
-		phone = String(phone);
-		phone = "254" + phone.substr(phone.length - 9, phone.length);
+		phone =(phone);
+		phone = "254" + +String(phone).slice(-9);
 
 		const response = await service.post("mpesa/c2b/v1/simulate", {
 			ShortCode: config.shortcode,
@@ -177,11 +184,11 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 
 	/**
 	 * Transfer funds between two paybills
-	 * @var receiver Receiving party phone
-	 * @var amount Amount to transfer
-	 * @var command Command ID
-	 * @var occassion
-	 * @var remarks
+	 * @param receiver Receiving party phone
+	 * @param amount Amount to transfer
+	 * @param command Command ID
+	 * @param occassion
+	 * @param remarks
 	 *
 	 * @return Promise<any>
 	 */
@@ -192,8 +199,8 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		remarks = "",
 		occassion = ""
 	): Promise<MpesaResponse> {
-		phone = String(phone);
-		phone = "254" + phone.substr(phone.length - 9, phone.length);
+		phone =(phone);
+		phone = "254" + +String(phone).slice(-9);
 
 		const response = await service.post("mpesa/b2c/v1/paymentrequest", {
 			InitiatorName: config.username,
@@ -231,12 +238,12 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 
 	/**
 	 * Transfer funds between two paybills
-	 * @var receiver Receiving party paybill
-	 * @var receiver_type Receiver party type
-	 * @var amount Amount to transfer
-	 * @var command Command ID
-	 * @var reference Account Reference mandatory for “BusinessPaybill” CommandID.
-	 * @var remarks
+	 * @param receiver Receiving party paybill
+	 * @param receiver_type Receiver party type
+	 * @param amount Amount to transfer
+	 * @param command Command ID
+	 * @param reference Account Reference mandatory for “BusinessPaybill” CommandID.
+	 * @param remarks
 	 *
 	 * @return Promise<any>
 	 */
@@ -277,10 +284,10 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Get Status of a Transaction
 	 *
-	 * @var String transaction
-	 * @var String command
-	 * @var String remarks
-	 * @var String occassion
+	 * @param transaction
+	 * @param command
+	 * @param remarks
+	 * @param occassion
 	 *
 	 * @return Promise<any> Result
 	 */
@@ -320,12 +327,12 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Reverse a Transaction
 	 *
-	 * @var String transaction
-	 * @var Integer amount
-	 * @var Integer receiver
-	 * @var String receiver_type
-	 * @var String remarks
-	 * @var String occassion
+	 * @param transaction
+	 * @param amount
+	 * @param receiver
+	 * @param receiver_type
+	 * @param remarks
+	 * @param occassion
 	 *
 	 * @return Promise<any> Result
 	 */
@@ -365,9 +372,9 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Check Account Balance
 	 *
-	 * @var String command
-	 * @var String remarks
-	 * @var String occassion
+	 * @param command
+	 * @param remarks
+	 * @param occassion
 	 *
 	 * @return Promise<any> Result
 	 */
@@ -400,7 +407,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Validate Transaction Data
 	 *
-	 * @var Callable callback Defined function or closure to process data and return true/false
+	 * @param callback Defined function or closure to process data and return true/false
 	 *
 	 * @return Promise<any>
 	 */
@@ -419,14 +426,14 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Confirm Transaction Data
 	 *
-	 * @var Callable callback Defined function or closure to process data and return true/false
+	 * @param callback Defined function or closure to process data and return true/false
 	 *
 	 * @return Promise<any>
 	 */
 	function confirmTransaction(
 		ok: boolean,
 		data: any,
-		callback: CallableFunction
+		callback:Function
 	) {
 		if (callback) {
 			ok = callback(data);
@@ -446,7 +453,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Reconcile Transaction Using Instant Payment Notification from M-PESA
 	 *
-	 * @var Callable callback Defined function or closure to process data and return true/false
+	 * @param callback Defined function or closure to process data and return true/false
 	 *
 	 * @return Promise<any>
 	 */
@@ -465,7 +472,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Process Results of an API Request
 	 *
-	 * @var Callable callback Defined function or closure to process data and return true/false
+	 * @param callback Defined function or closure to process data and return true/false
 	 *
 	 * @return Promise<any>
 	 */
@@ -484,11 +491,11 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	/**
 	 * Process Transaction Timeout
 	 *
-	 * @var Callable callback Defined function or closure to process data and return true/false
+	 * @param callback Defined function or closure to process data and return true/false
 	 *
 	 * @return Promise<any>
 	 */
-	function processTimeout(ok: boolean) {
+	function processTimeout(callback: CallableFunction, ok: boolean) {
 		return ok
 			? {
 					ResultCode: 0,
@@ -501,6 +508,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	}
 
 	return {
+		billManager,
 		stkPush,
 		registerUrls,
 		simulateC2B,

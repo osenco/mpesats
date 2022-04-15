@@ -11,8 +11,9 @@ export type MpesaConfig = {
 	validationUrl: string;
 	confirmationUrl: string;
 	callbackUrl: string;
-	timeoutUrl: string;
-	resultUrl: string;
+	timeoutUrl?: string;
+	resultUrl?: string;
+	billingUrl?: string;
 };
 
 export type MpesaResponse = { data: any; error: any };

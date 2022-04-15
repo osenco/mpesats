@@ -91,3 +91,14 @@ mpesa.sendB2C(254705459494, 10).then(({ error, data }) => {
 		console.log(errorCode, errorMessage);
 	}
 });
+
+mpesa
+	.billing()
+	.onboard(
+		"hi@osen.co.ke",
+		254705459494,
+		"https://osen.co.ke/wp-content/uploads/2019/11/logo.png",
+		1
+	)
+	.then(({ error, data }) => {})
+	.catch((e) => {});

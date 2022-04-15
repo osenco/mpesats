@@ -1,6 +1,6 @@
 import { useMpesa } from "../dist";
 
-const { stkPush } = useMpesa({
+const { stkPush, billManager } = useMpesa({
 	env: "sandbox",
 	type: 4,
 	shortcode: 174379,
@@ -42,3 +42,13 @@ try {
 } catch (error) {
 	console.log(error);
 }
+
+billManager()
+	.onboard(
+		"hi@osen.co.ke",
+		254705459494,
+		"https://osen.co.ke/wp-content/uploads/2019/11/logo.png",
+		1
+	)
+	.then(({ error, data }) => {})
+	.catch((e) => {});

@@ -1,5 +1,7 @@
+import { BillManager } from "./billing";
 import { MpesaResponse, B2BCommands, B2CCommands, MpesaConfig, ResponseType } from "./types";
 export declare const useMpesa: (configs: MpesaConfig, token?: string | null) => {
+    billManager: () => BillManager;
     stkPush: (phone: string | number, amount: number, reference?: string | number, description?: string, remark?: string) => Promise<MpesaResponse>;
     registerUrls: (response_type?: ResponseType) => Promise<MpesaResponse>;
     simulateC2B: (phone: string | number, amount?: number, reference?: string | number, command?: string) => Promise<{
@@ -18,7 +20,7 @@ export declare const useMpesa: (configs: MpesaConfig, token?: string | null) => 
         ResultCode: number;
         ResultDesc: string;
     };
-    confirmTransaction: (ok: boolean) => {
+    confirmTransaction: (ok: boolean, data: any, callback: Function) => {
         ResultCode: number;
         ResultDesc: string;
     };
@@ -30,7 +32,7 @@ export declare const useMpesa: (configs: MpesaConfig, token?: string | null) => 
         ResultCode: number;
         ResultDesc: string;
     };
-    processTimeout: (ok: boolean) => {
+    processTimeout: (callback: CallableFunction, ok: boolean) => {
         ResultCode: number;
         ResultDesc: string;
     };

@@ -11,12 +11,22 @@ export declare type MpesaConfig = {
     validationUrl: string;
     confirmationUrl: string;
     callbackUrl: string;
-    timeoutUrl: string;
-    resultUrl: string;
+    timeoutUrl?: string;
+    resultUrl?: string;
+    billingUrl?: string;
 };
 export declare type MpesaResponse = {
     data: any;
     error: any;
+};
+export declare type MpesaSTKResponse = {
+    MerchantRequestID: string | null;
+    CheckoutRequestID: string | null;
+    ResponseCode: number | null;
+    ResponseDescription: string | null;
+    CustomerMessage: string | null;
+    errorCode: number | null;
+    errorMessage: string | null;
 };
 export declare type ResponseType = "Completed" | "Cancelled";
 export declare type B2BCommands = "BusinessPayBill" | "BusinessBuyGoods" | "DisburseFundsToBusiness" | "BusinessToBusinessTransfer" | "MerchantToMerchantTransfer";

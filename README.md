@@ -5,17 +5,21 @@ This is a simple wrapper for Mpesa Daraja API using typescript
 ## Installation
 
 ### Via npm
+
 ``` javascript
 npm install --save @osenco/mpesa
-``` 
+```
 
 ### Or yarn
+
 ``` javascript
 yarn add @osenco/mpesa
 ```
 
 ## Usage
+
 ### Terms definitions
+
 <table>
     <thead>
         <tr>
@@ -90,7 +94,7 @@ yarn add @osenco/mpesa
         <tr>
             <td>timeoutUrl</td>
             <td>
-                This is the URL to be specified in your request that will be used by API Proxy to send notification incase the payment request is timed out while awaiting processing in the queue. 
+                This is the URL to be specified in your request that will be used by API Proxy to send notification incase the payment request is timed out while awaiting processing in the queue.
             </td>
             <td>string</td>
         </tr>
@@ -105,15 +109,19 @@ yarn add @osenco/mpesa
 </table>
 
 ### Import what you need
+
 ``` javascript
 import { Mpesa, useMpesa } from "@osenco/mpesa"
 ```
-or 
+
+or
+
 ```javascript
 const { Mpesa, useMpesa } = require("@osenco/mpesa")
 ```
 
 ### Instantiation
+
 ``` javascript
 const mpesa = new Mpesa(
     {
@@ -129,15 +137,17 @@ const mpesa = new Mpesa(
         validationUrl //"/lipwa/validate",
         confirmationUrl //"/lipwa/confirm",
         callbackUrl //"/lipwa/reconcile",
-        timeoutUrl //"/lipwa/timeout",
-        resultUrl //"/lipwa/results",
+        timeoutUrl //"/lipwa/timeout", OPTIONAL
+        resultUrl //"/lipwa/results", OPTIONAL
+        billingUrl //"/lipwa/billing", OPTIONAL
     }
 )
 ```
+
 Or, individual APIs
 
 ``` javascript
-const { stkPush, registerUrls } = useMpesa(
+const { stkPush, registerUrls, billManager } = useMpesa(
     {
         env //"sandbox",
         type //4,
@@ -151,12 +161,15 @@ const { stkPush, registerUrls } = useMpesa(
         validationUrl //"/lipwa/validate",
         confirmationUrl //"/lipwa/confirm",
         callbackUrl //"/lipwa/reconcile",
-        timeoutUrl //"/lipwa/timeout",
-        resultUrl //"/lipwa/results",
+        timeoutUrl //"/lipwa/timeout", OPTIONAL
+        resultUrl //"/lipwa/results", OPTIONAL
+        billingUrl //"/lipwa/billing", OPTIONAL
     }
 )
 ```
+
 ### Send an STK push request
+
 ``` javascript
 mpesa.stkPush(
     254705459494,
@@ -321,4 +334,29 @@ mpesa.sendB2B(
         console.log(errorCode, errorMessage);
     }
 })
+```
+
+### Bill Manager
+
+#### Onboard
+
+``` javascript
+const onboard = mpesa.billing()
+    .onboard()
+    .then(({ error, data }) => {})
+    .catch((e) => {});
+```
+
+#### Send Invoice(s)
+
+``` javascript
+const invoice = mpesa.billing()
+    .sendInvoice({})
+    .then(({ error, data }) => {})
+    .catch((e) => {});
+
+const invoices = billManager()
+    .sendInvoices({})
+    .then(({ error, data }) => {})
+    .catch((e) => {});
 ```
