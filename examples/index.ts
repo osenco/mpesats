@@ -103,23 +103,27 @@ mpesa
 	.then(({ error, data }) => {})
 	.catch((e) => {});
 
-
-const invoice = mpesa.billing()
-.sendInvoice({
-	externalReference: "",
-	billedFullName: "",
-	billedPhoneNumber: "",
-	billedPeriod: "",
-	invoiceName: "",
-	dueDate: "",
-	accountReference: "",
-	amount: "",
-})
-.then(({ error, data }) => {})
-.catch((e) => {});
+const invoice = mpesa
+	.billing()
+	.sendInvoice({
+		externalReference: "",
+		billedFullName: "",
+		billedPhoneNumber: "",
+		billedPeriod: "",
+		invoiceName: "",
+		dueDate: "",
+		accountReference: "",
+		amount: "",
+	})
+	.then(({ error, data }) => {})
+	.catch((e) => {});
 
 mpesa
-.generateQR(100, 'Osen Concepts', 254700900499, 'AC6G9GB', 'PB')
-.then(({ error, data: {QRCode} }) => {
-	console.log(QRCode);
-});
+	.generateQR(100, "Osen Concepts", 254700900499, "AC6G9GB", "PB")
+	.then(({ error, data: { QRCode } }) => {
+		if (QRCode) {
+			const imgSrc = `data:image/png;base64, ${QRCode}`;
+		} else {
+			console.log(error);
+		}
+	});
