@@ -231,7 +231,7 @@ class Mpesa {
             QRType,
             MerchantName,
             RefNo,
-            Amount,
+            Amount: Number(Amount),
             TrxCode,
             CPI,
         });

@@ -79,7 +79,7 @@ export declare class Mpesa {
      * @param TrxCode Transaction Type: (BG: Pay Merchant (Buy Goods). WA: Withdraw Cash at Agent Till. PB: Paybill or Business number. SM: Send Money(Mobile number). SB: Sent to Business. Business number CPI in MSISDN format.
      * @param CPI Credit Party Identifier. Can be a Mobile Number, Business Number, Agent Till, Paybill or Business number, Merchant Buy Goods.
      */
-    generateQR(Amount: string, MerchantName: string, CPI: string, RefNo: string, TrxCode?: string, QRVersion?: string, QRFormat?: string, QRType?: string): Promise<MpesaResponse>;
+    generateQR(Amount: string | number, MerchantName: string, CPI: string | number, RefNo: string, TrxCode?: string, QRVersion?: string, QRFormat?: string, QRType?: string): Promise<MpesaResponse>;
     /**
      * Get Status of a Transaction
      *

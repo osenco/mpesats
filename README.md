@@ -336,6 +336,17 @@ mpesa.sendB2B(
 })
 ```
 
+### Generate QR Codes
+
+``` javascript
+mpesa
+.generateQR(100, 'Osen Concepts', 254700900499, 'AC6G9GB', 'PB')
+.then(({ error, data: {QRCode} }) => {
+ print(`<img src="${QRCode}" />`);
+});
+
+```
+
 ### Bill Manager
 
 #### Onboard
@@ -356,7 +367,7 @@ const invoice = mpesa.billing()
     .catch((e) => {});
 
 const invoices = billManager()
-    .sendInvoices({})
+    .sendInvoices([{}])
     .then(({ error, data }) => {})
     .catch((e) => {});
 ```

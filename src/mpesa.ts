@@ -305,9 +305,9 @@ export class Mpesa {
 	 * @param CPI Credit Party Identifier. Can be a Mobile Number, Business Number, Agent Till, Paybill or Business number, Merchant Buy Goods.
 	 */
 	public async generateQR(
-		Amount: string,
+		Amount: string|number,
 		MerchantName: string,
-		CPI: string,
+		CPI: string|number,
 		RefNo: string,
 		TrxCode: string = "BG",
 		QRVersion: string = "01",
@@ -320,7 +320,7 @@ export class Mpesa {
 			QRType,
 			MerchantName,
 			RefNo,
-			Amount,
+			Amount: Number(Amount),
 			TrxCode,
 			CPI,
 		});
