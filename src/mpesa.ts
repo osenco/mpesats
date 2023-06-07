@@ -198,13 +198,13 @@ export class Mpesa {
 	 * @return Promise<any>
 	 */
 	public async sendB2C(
-		phone: string | number,
-		amount = 10,
-		command: B2CCommands = "BusinessPayment",
-		remarks = "",
-		occassion = ""
+		PartyB: string | number,
+		Amount: number = 10,
+		CommandID: B2CCommands = "BusinessPayment",
+		Remarks = "",
+		Occasion = ""
 	): Promise<MpesaResponse> {
-		phone = "254" + String(phone).slice(-9);
+		PartyB = "254" + String(PartyB).slice(-9);
 
 		const response = await this.service.post(
 			"mpesa/b2c/v1/paymentrequest",
@@ -212,14 +212,14 @@ export class Mpesa {
 				InitiatorName: this.config.username,
 				SecurityCredential:
 					await this.service.generateSecurityCredential(),
-				CommandID: command,
-				Amount: Number(amount),
+				CommandID,
+				Amount,
 				PartyA: this.config.shortcode,
-				PartyB: phone,
-				Remarks: remarks,
+				PartyB,
+				Remarks,
 				QueueTimeOutURL: this.config.timeoutUrl,
 				ResultURL: this.config.resultUrl,
-				Occasion: occassion,
+				Occasion,
 			}
 		);
 

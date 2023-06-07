@@ -36,7 +36,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		callbackUrl: "/lipwa/reconcile",
 		timeoutUrl: "/lipwa/timeout",
 		resultUrl: "/lipwa/results",
-        billingUrl: "/lipwa/billing",
+		billingUrl: "/lipwa/billing",
 	};
 
 	if (!configs || !configs.store || configs.type == 4) {
@@ -66,8 +66,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		"Content-Type": "application/json",
 	};
 
-	function billManager(): BillManager
-	{
+	function billManager(): BillManager {
 		return new BillManager(configs);
 	}
 
@@ -82,35 +81,33 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	 */
 	async function stkPush(
 		phone: string | number,
-		amount: number,
-		reference: string | number = ref,
-		description = "Transaction Description",
-		remark = "Remark"
+		Amount: number,
+		AccountReference: string | number = ref,
+		TransactionDesc = "Transaction Description",
+		Remark = "Remark"
 	): Promise<MpesaResponse> {
-		phone =(phone);
-		phone = "254" + +String(phone).slice(-9);
-
-		const timestamp = format(new Date(), "yyyyMMddHHmmss");
-		const password = Buffer.from(
-			config.shortcode + config.passkey + timestamp
+		const PartyA = "254" + +String(phone).slice(-9);
+		const Timestamp = format(new Date(), "yyyyMMddHHmmss");
+		const Password = Buffer.from(
+			config.shortcode + config.passkey + Timestamp
 		).toString("base64");
 
 		const response = await service.post("mpesa/stkpush/v1/processrequest", {
 			BusinessShortCode: config.store,
-			Password: password,
-			Timestamp: timestamp,
+			Password,
+			Timestamp,
 			TransactionType:
 				Number(config.type) == 4
 					? "CustomerPayBillOnline"
 					: "CustomerBuyGoodsOnline",
-			Amount: Number(amount),
-			PartyA: phone,
+			Amount,
+			PartyA,
 			PartyB: config.shortcode,
-			PhoneNumber: phone,
+			PhoneNumber: PartyA,
 			CallBackURL: config.callbackUrl,
-			AccountReference: reference,
-			TransactionDesc: description,
-			Remark: remark,
+			AccountReference,
+			TransactionDesc,
+			Remark,
 		});
 
 		if (response.MerchantRequestID) {
@@ -125,11 +122,11 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	}
 
 	async function registerUrls(
-		response_type: ResponseType = "Completed"
+		ResponseType: ResponseType = "Completed"
 	): Promise<MpesaResponse> {
 		const response = await service.post("mpesa/c2b/v1/registerurl", {
 			ShortCode: config.store,
-			ResponseType: response_type,
+			ResponseType,
 			ConfirmationURL: config.confirmationUrl,
 			ValidationURL: config.validationUrl,
 		});
@@ -162,7 +159,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		reference: string | number = "TRX",
 		command = ""
 	) {
-		phone =(phone);
+		phone = phone;
 		phone = "254" + +String(phone).slice(-9);
 
 		const response = await service.post("mpesa/c2b/v1/simulate", {
@@ -184,6 +181,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 
 	/**
 	 * Transfer funds between two paybills
+	 *
 	 * @param receiver Receiving party phone
 	 * @param amount Amount to transfer
 	 * @param command Command ID
@@ -199,8 +197,8 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		remarks = "",
 		occassion = ""
 	): Promise<MpesaResponse> {
-		phone =(phone);
-		phone = "254" + +String(phone).slice(-9);
+		phone = phone;
+		phone = "254" + String(phone).slice(-9);
 
 		const response = await service.post("mpesa/b2c/v1/paymentrequest", {
 			InitiatorName: config.username,
@@ -320,7 +318,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 		if (response.errorCode) {
 			return { data: null, error: response };
 		}
-		
+
 		return { data: response, error: null };
 	}
 
@@ -337,25 +335,25 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	 * @return Promise<any> Result
 	 */
 	async function reverseTransaction(
-		transaction: string,
-		amount: number,
-		receiver: number,
-		receiver_type = 3,
-		remarks = "Transaction Reversal",
-		occasion = "Transaction Reversal"
+		TransactionID: string,
+		Amount: number,
+		ReceiverParty: number,
+		RecieverIdentifierType = 3,
+		Remarks = "Transaction Reversal",
+		Occasion = "Transaction Reversal"
 	): Promise<MpesaResponse> {
 		const response = await service.post("mpesa/reversal/v1/request", {
 			CommandID: "TransactionReversal",
 			Initiator: config.username,
 			SecurityCredential: await service.generateSecurityCredential(),
-			TransactionID: transaction,
-			Amount: amount,
-			ReceiverParty: receiver,
-			RecieverIdentifierType: receiver_type,
+			TransactionID,
+			Amount,
+			ReceiverParty,
+			RecieverIdentifierType,
 			ResultURL: config.resultUrl,
 			QueueTimeOutURL: config.timeoutUrl,
-			Remarks: remarks,
-			Occasion: occasion,
+			Remarks,
+			Occasion,
 		});
 
 		if (response.MerchantRequestID) {
@@ -379,16 +377,16 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	 * @return Promise<any> Result
 	 */
 	async function checkBalance(
-		command: string,
-		remarks = "Balance Query"
+		CommandID: string,
+		Remarks = "Balance Query"
 	): Promise<MpesaResponse> {
 		const response = await service.post("mpesa/accountbalance/v1/query", {
-			CommandID: command,
+			CommandID,
 			Initiator: config.username,
 			SecurityCredential: await service.generateSecurityCredential(),
 			PartyA: config.shortcode,
 			IdentifierType: config.type,
-			Remarks: remarks,
+			Remarks,
 			QueueTimeOutURL: config.timeoutUrl,
 			ResultURL: config.resultUrl,
 		});
@@ -430,11 +428,7 @@ export const useMpesa = (configs: MpesaConfig, token: string | null = null) => {
 	 *
 	 * @return Promise<any>
 	 */
-	function confirmTransaction(
-		ok: boolean,
-		data: any,
-		callback:Function
-	) {
+	function confirmTransaction(ok: boolean, data: any, callback: Function) {
 		if (callback) {
 			ok = callback(data);
 		}
