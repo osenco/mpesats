@@ -34,7 +34,7 @@ export class Mpesa {
         billingUrl: "/lipwa/billing",
 	};
 
-	public ref = Math.random().toString(16).slice(2, 8).toUpperCase();
+	public ref: string = Math.random().toString(16).slice(2, 8).toUpperCase();
 
 	/**
 	 * Setup global configuration for classes
