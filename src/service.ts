@@ -21,13 +21,7 @@ export class Service {
         secret: "bclwIPkcRqw61yUt",
         username: "apitest",
         password: "",
-        passkey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
-        validationUrl: "/lipwa/validate",
-        confirmationUrl: "/lipwa/confirm",
-        callbackUrl: "/lipwa/reconcile",
-        timeoutUrl: "/lipwa/timeout",
-        resultUrl: "/lipwa/results",
-        billingUrl: "/lipwa/billing",
+        passkey: "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
     };
     /**
      * Setup global configuration for classes

@@ -8,12 +8,6 @@ export type MpesaConfig = {
 	username: string;
 	password: string;
 	passkey: string;
-	validationUrl: string;
-	confirmationUrl: string;
-	callbackUrl: string;
-	timeoutUrl?: string;
-	resultUrl?: string;
-	billingUrl?: string;
 };
 
 export type MpesaResponse = { data: any; error: any };

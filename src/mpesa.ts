@@ -26,12 +26,6 @@ export class Mpesa {
 		password: "",
 		passkey:
 			"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
-		validationUrl: "/lipwa/validate",
-		confirmationUrl: "/lipwa/confirm",
-		callbackUrl: "/lipwa/reconcile",
-		timeoutUrl: "/lipwa/timeout",
-		resultUrl: "/lipwa/results",
-        billingUrl: "/lipwa/billing",
 	};
 
 	public ref: string = Math.random().toString(16).slice(2, 8).toUpperCase();
@@ -54,12 +48,6 @@ export class Mpesa {
 			password: "",
 			passkey:
 				"bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919",
-			validationUrl: "/lipwa/validate",
-			confirmationUrl: "/lipwa/confirm",
-			callbackUrl: "/lipwa/reconcile",
-			timeoutUrl: "/lipwa/timeout",
-			resultUrl: "/lipwa/results",
-			billingUrl: "/lipwa/billing",
 		};
 
 		if (!configs || !configs.store || configs.type == 4) {
@@ -88,6 +76,7 @@ export class Mpesa {
 		phone: string | number,
 		amount: number,
 		reference: string | number = this.ref,
+		CallBackURL: string = "/lipwa/reconcile",
 		description = "Transaction Description",
 		remark = "Remark"
 	): Promise<MpesaResponse> {
@@ -112,7 +101,7 @@ export class Mpesa {
 				PartyA: phone,
 				PartyB: this.config.shortcode,
 				PhoneNumber: phone,
-				CallBackURL: this.config.callbackUrl,
+				CallBackURL,
 				AccountReference: reference,
 				TransactionDesc: description,
 				Remark: remark,
@@ -131,13 +120,15 @@ export class Mpesa {
 	}
 
 	public async registerUrls(
+		ConfirmationURL: string,
+		ValidationURL: string,
 		response_type: ResponseType = "Completed"
 	): Promise<MpesaResponse> {
 		const response = await this.service.post("mpesa/c2b/v1/registerurl", {
 			ShortCode: this.config.store,
 			ResponseType: response_type,
-			ConfirmationURL: this.config.confirmationUrl,
-			ValidationURL: this.config.validationUrl,
+			ConfirmationURL,
+			ValidationURL,
 		});
 
 		if (response.errorCode) {
@@ -201,6 +192,8 @@ export class Mpesa {
 		PartyB: string | number,
 		Amount: number = 10,
 		CommandID: B2CCommands = "BusinessPayment",
+		QueueTimeOutURL: string = "/lipwa/timeout",
+		ResultURL: string = "/lipwa/result",
 		Remarks = "",
 		Occasion = ""
 	): Promise<MpesaResponse> {
@@ -217,8 +210,8 @@ export class Mpesa {
 				PartyA: this.config.shortcode,
 				PartyB,
 				Remarks,
-				QueueTimeOutURL: this.config.timeoutUrl,
-				ResultURL: this.config.resultUrl,
+				QueueTimeOutURL,
+				ResultURL,
 				Occasion,
 			}
 		);
@@ -261,6 +254,8 @@ export class Mpesa {
 		amount: number,
 		command: B2BCommands = "BusinessBuyGoods",
 		reference: string | number = "TRX",
+		QueueTimeOutURL: string = "/lipwa/timeout",
+		ResultURL: string = "/lipwa/result",
 		remarks = ""
 	): Promise<MpesaResponse> {
 		const response = await this.service.post(
@@ -277,8 +272,8 @@ export class Mpesa {
 				PartyB: receiver,
 				AccountReference: reference,
 				Remarks: remarks,
-				QueueTimeOutURL: this.config.timeoutUrl,
-				ResultURL: this.config.resultUrl,
+				QueueTimeOutURL,
+				ResultURL,
 			}
 		);
 
@@ -345,6 +340,8 @@ export class Mpesa {
 	public async checkStatus(
 		transaction: string,
 		command = "TransactionStatusQuery",
+		QueueTimeOutURL: string = "/lipwa/timeout",
+		ResultURL: string = "/lipwa/result",
 		remarks = "Transaction Status Query",
 		occasion = "Transaction Status Query"
 	): Promise<MpesaResponse> {
@@ -358,8 +355,8 @@ export class Mpesa {
 				TransactionID: transaction,
 				PartyA: this.config.shortcode,
 				IdentifierType: this.config.type,
-				ResultURL: this.config.resultUrl,
-				QueueTimeOutURL: this.config.timeoutUrl,
+				ResultURL,
+				QueueTimeOutURL,
 				Remarks: remarks,
 				Occasion: occasion,
 			}
@@ -393,6 +390,8 @@ export class Mpesa {
 		amount: number,
 		receiver: number,
 		receiver_type = 3,
+		QueueTimeOutURL: string = "/lipwa/timeout",
+		ResultURL: string = "/lipwa/result",
 		remarks = "Transaction Reversal",
 		occasion = "Transaction Reversal"
 	): Promise<MpesaResponse> {
@@ -404,8 +403,8 @@ export class Mpesa {
 			Amount: amount,
 			ReceiverParty: receiver,
 			RecieverIdentifierType: receiver_type,
-			ResultURL: this.config.resultUrl,
-			QueueTimeOutURL: this.config.timeoutUrl,
+			ResultURL,
+			QueueTimeOutURL,
 			Remarks: remarks,
 			Occasion: occasion,
 		});
@@ -432,6 +431,8 @@ export class Mpesa {
 	 */
 	public async checkBalance(
 		command: string,
+		QueueTimeOutURL: string = "/lipwa/timeout",
+		ResultURL: string = "/lipwa/result",
 		remarks = "Balance Query"
 	): Promise<MpesaResponse> {
 		const response = await this.service.post(
@@ -444,8 +445,8 @@ export class Mpesa {
 				PartyA: this.config.shortcode,
 				IdentifierType: this.config.type,
 				Remarks: remarks,
-				QueueTimeOutURL: this.config.timeoutUrl,
-				ResultURL: this.config.resultUrl,
+				QueueTimeOutURL,
+				ResultURL,
 			}
 		);
 

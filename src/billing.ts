@@ -12,6 +12,7 @@ export class BillManager extends Mpesa {
 		email: string,
 		officialContact: string | number,
 		logo: string,
+		billingUrl: string,
 		sendReminders = 1
 	): Promise<MpesaResponse> {
 		const response = await this.service.post(
@@ -22,7 +23,7 @@ export class BillManager extends Mpesa {
 				email,
 				officialContact,
 				sendReminders,
-				callbackUrl: this.config.billingUrl,
+				callbackUrl: billingUrl,
 			}
 		);
 
@@ -36,6 +37,7 @@ export class BillManager extends Mpesa {
 	public async modify(
 		email: string,
 		officialContact: string | number,
+		billingUrl: string,
 		sendReminders = 1
 	): Promise<MpesaResponse> {
 		const response = await this.service.post(
@@ -45,7 +47,7 @@ export class BillManager extends Mpesa {
 				email,
 				officialContact,
 				sendReminders,
-				callbackUrl: this.config.billingUrl,
+				callbackUrl: billingUrl,
 			}
 		);
 
